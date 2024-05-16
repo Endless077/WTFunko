@@ -1,10 +1,11 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "bootstrap/dist/css/bootstrap.min.css"; // Importa il CSS di Bootstrap
+import Home from "./Home.tsx";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+// Assicurati che l'elemento con id 'root' esista nel tuo file index.html
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+    <Home />
+  </React.StrictMode>
+);

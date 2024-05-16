@@ -1,0 +1,38 @@
+/* Stili generali */
+body {
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  margin-top: 20px;
+}
+
+/* Stili per l'intestazione */
+h1 {
+  color: #333;
+  text-align: center;
+}
+
+/* Stili per le carte dei prodotti */
+.card {
+  margin-bottom: 20px;
+}
+
+.card-title {
+  color: #0056b3;
+}
+
+.card-text {
+  color: #333;
+}
+
+/* Stili per i pulsanti */
+.btn-primary {
+  background-color: #f15a24;
+  border-color: #f15a24;
+}
+
+.btn-primary:hover {
+  background-color: #d45220;
+  border-color: #d45220;
+}
