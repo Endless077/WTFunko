@@ -1,14 +1,13 @@
-import {Navbar} from "./components/Navbar.jsx";
-import {Home} from "./Home.jsx";
+import { Navbar } from "./components/Navbar.jsx";
+import { Home } from "./Home.jsx";
 
 function App() {
-
   return (
-      <>
-      <Navbar/>
-      <Home/>
-      </>
-  )
+    <>
+      <Navbar />
+      <Home />
+    </>
+  );
 }
 
-export default App
+export default App;

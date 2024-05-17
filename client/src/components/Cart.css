@@ -1,0 +1,28 @@
+.cart-container {
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 20px auto;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cart-table {
+  border-collapse: collapse;
+  border: none;
+}
+
+.cart-table tfoot tr {
+  border: none;
+}
+
+.cart-table tfoot td {
+  border: none;
+}
+
+.cart-button {
+  border: none;
+  margin-right: -45px;
+}
