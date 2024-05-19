@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navbar } from "./Navbar";
+import { Link } from "react-router-dom";
 import "./Cart.css";
 
 const CartPage = () => {
@@ -80,7 +81,7 @@ const CartPage = () => {
               <th>Price</th>
               <th>Quantity</th>
               <th>Total</th>
-              <th>Action</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -88,11 +89,13 @@ const CartPage = () => {
               <tr key={item.id}>
                 <td>
                   <div className="d-flex align-items-center">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      style={{ marginRight: "10px", width: "50px" }}
-                    />
+                    <Link to={`/productInfo/${item.id}`}>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        style={{ marginRight: "10px", width: "50px" }}
+                      />
+                    </Link>
                     <span>{item.name}</span>
                   </div>
                 </td>

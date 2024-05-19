@@ -1,4 +1,3 @@
-// components/Navbar.jsx
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -6,9 +5,16 @@ import "./Navbar.css";
 
 export const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    setUsername(username);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUsername(""); // Svuota il nome utente quando l'utente esegue il logout
   };
 
   return (
@@ -21,30 +27,20 @@ export const Navbar = () => {
             alt="Brand Logo"
           />
         </Link>
-        <div className="search-bar">
-          <div className="input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search a Product..."
-              aria-label="Search"
-              aria-describedby="search-icon"
-            />
-            <button
-              className="btn btn-outline-dark"
-              type="button"
-              id="search-icon"
-            >
-              <FaSearch />
-            </button>
-          </div>
-        </div>
         <div className="buttons">
           {isLoggedIn ? (
-            <Link to="/profile" className="btn btn-outline-dark">
-              <i className="fa fa-user me-1"></i>
-              Profile
-            </Link>
+            <>
+              <Link to="/profile" className="btn btn-outline-dark">
+                <i className="fa fa-user me-1"></i>
+                {username}
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-outline-dark ms-2"
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <Link to="/login" className="btn btn-outline-dark">
               <i className="fa fa-sign-in me-1"></i>
@@ -55,10 +51,14 @@ export const Navbar = () => {
             <i className="fa fa-shopping-cart me-1"></i>
             Cart
           </Link>
-          <a href="" className="btn btn-outline-dark ms-2">
+          <Link
+            to="/"
+            className="btn btn-outline-dark ms-2"
+            onClick={handleLogout}
+          >
             <i className="fa fa-question-circle" style={{ padding: "5px" }}></i>
             About us
-          </a>
+          </Link>
         </div>
       </div>
     </nav>

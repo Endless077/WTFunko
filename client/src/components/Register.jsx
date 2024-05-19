@@ -1,16 +1,17 @@
-// components/Login.jsx
+// components/Register.jsx
 import React, { useState } from "react";
-import { Navbar } from "./Navbar";
+import { Navbar } from "../../../client/src/components/Navbar";
 import { Link } from "react-router-dom";
-import "./Login.css";
 
-const Login = () => {
+const Register = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Logica per la gestione del login
+    // Logica per la gestione della registrazione
+    console.log("Username:", username);
     console.log("Email:", email);
     console.log("Password:", password);
   };
@@ -23,11 +24,24 @@ const Login = () => {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h1 className="display-6 fw-bolder text-center">Login</h1>
+                <h1 className="display-6 fw-bolder text-center">Register</h1>
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label htmlFor="username" className="form-label">
                       Username
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">
+                      Email address
                     </label>
                     <input
                       type="email"
@@ -51,17 +65,15 @@ const Login = () => {
                       required
                     />
                   </div>
-                  <button type="submit" className="btn btn-outline-dark w-100">
-                    Login
+                  <button
+                    type="submit"
+                    className="btn btn-outline-dark w-100"
+                    disabled={isSubmitDisabled()}
+                    onClick={handleSubmit}
+                  >
+                    Register
                   </button>
                 </form>
-                <div className="mt-3 text-center">
-                  <p>Not registered yet?</p>
-                  <Link to="/register" className="btn btn-outline-dark ms-2">
-                    <i className="fa fa-user-plus me-1"></i>
-                    Register
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
@@ -71,4 +83,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

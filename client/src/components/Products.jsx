@@ -1,39 +1,33 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { FaSearch } from "react-icons/fa";
+import "./Products.css";
 
 export const Products = () => {
   const [data, setData] = useState([]);
-  const [filter, setFilter] = useState(data);
+  const [filter, setFilter] = useState([]);
   const [loading, setLoading] = useState(false);
-  let componentMounted = true;
 
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const response = await fetch("https://fakestoreapi.com/products");
-      if (componentMounted) {
-        setData(await response.clone().json());
-        setFilter(await response.json());
-        setLoading(false);
-        console.log(filter);
-      }
-
-      return () => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        componentMounted = false;
-      };
+      const response = await fetch("https://dummyjson.com/products");
+      const result = await response.json();
+      setData(result.products);
+      setFilter(result.products);
+      setLoading(false);
     };
 
     getProducts();
   }, []);
 
-  const Loading = () => {
-    return <>Loading...</>;
+  const filterProducts = (cat) => {
+    const updatedList = data.filter((x) => x.category === cat);
+    setFilter(updatedList);
   };
 
-  const filterProducts = (cat) => {
-    const updateList = data.filter((x) => x.category === cat);
-    setFilter(updateList);
+  const Loading = () => {
+    return <>Loading...</>;
   };
 
   const ShowProducts = () => {
@@ -48,55 +42,54 @@ export const Products = () => {
           </button>
           <button
             className="btn btn-outline-dark me-2"
-            onClick={() => filterProducts("men's clothing")}
+            onClick={() => filterProducts("smartphones")}
           >
-            Men's Clothing
+            Smartphones
           </button>
           <button
             className="btn btn-outline-dark me-2"
-            onClick={() => filterProducts("women's clothing")}
+            onClick={() => filterProducts("laptops")}
           >
-            Women's Clothing
+            Laptops
           </button>
           <button
             className="btn btn-outline-dark me-2"
-            onClick={() => filterProducts("jewelery")}
+            onClick={() => filterProducts("fragrances")}
           >
-            Jewelery
+            Fragrances
           </button>
           <button
             className="btn btn-outline-dark me-2"
-            onClick={() => filterProducts("electronics")}
+            onClick={() => filterProducts("skincare")}
           >
-            Electronic
+            Skincare
           </button>
         </div>
 
-        {filter.map((product) => {
-          const { id, title, price, image } = product;
-          return (
-            <div key={id} className="col-md-3 mb-4 me-4">
-              <div
-                className="card h-100 text-center p-4"
-                style={{ width: "18rem" }}
-              >
-                <Link to={`/productInfo/${id}`}>
-                  <img
-                    src={image}
-                    className="card-img-top"
-                    alt={title}
-                    height={250}
-                  />
-                </Link>
-                <div className="card-body">
-                  <h5 className="card-title mb-0">{title.substring(0, 12)}</h5>
-                  <p className="card-text lead fw-bold">${price}</p>
-                  <button className="btn btn-outline-dark">Buy now</button>
-                </div>
+        {filter.map((product) => (
+          <div key={product.id} className="col-md-3 mb-4">
+            <div
+              className="card h-100 text-center p-4"
+              style={{ width: "18rem" }}
+            >
+              <Link to={`/productInfo/${product.id}`}>
+                <img
+                  src={product.thumbnail}
+                  className="card-img-top"
+                  alt={product.title}
+                  height="250"
+                />
+              </Link>
+              <div className="card-body">
+                <h5 className="card-title mb-0">
+                  {product.title.substring(0, 12)}
+                </h5>
+                <p className="card-text lead fw-bold">${product.price}</p>
+                <button className="btn btn-outline-dark">Buy now</button>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </>
     );
   };
@@ -105,13 +98,28 @@ export const Products = () => {
     <div>
       <div className="container my-5 py-5">
         <div className="row">
-          <div className="col-12 mb-5">
-            <h1
-              className="display-6 fw-bolder
-                        text-center"
-            >
-              Our selection of Funko Pop!
-            </h1>
+          <div className="col-12 mb-4 text-center">
+            <h1 className="display-6 fw-bolder">Our selection of Products</h1>
+          </div>
+          <div className="col-12 mb-4 d-flex justify-content-center">
+            <div className="search-bar">
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search a Product..."
+                  aria-label="Search"
+                  aria-describedby="search-icon"
+                />
+                <button
+                  className="btn btn-outline-dark"
+                  type="button"
+                  id="search-icon"
+                >
+                  <FaSearch />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         <div className="row justify-content-center">
