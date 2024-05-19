@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
+import React from 'react';
 import "./Products.css";
 
 export const Products = () => {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     const getProducts = async () => {
@@ -21,6 +23,27 @@ export const Products = () => {
     getProducts();
   }, []);
 
+  useEffect(() => {
+    const fetchCart = () => {
+      const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+      setCart(storedCart);
+    };
+    fetchCart();
+  }, []);
+
+  const addToCart = (product) => {
+    let updatedCart;
+    const existingProductIndex = cart.findIndex((item) => item.id === product.id);
+    if (existingProductIndex !== -1) {
+      updatedCart = [...cart];
+      updatedCart[existingProductIndex].quantity += 1;
+    } else {
+      updatedCart = [...cart, { ...product, quantity: 1 }];
+    }
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+  
   const filterProducts = (cat) => {
     const updatedList = data.filter((x) => x.category === cat);
     setFilter(updatedList);
@@ -85,7 +108,7 @@ export const Products = () => {
                   {product.title.substring(0, 12)}
                 </h5>
                 <p className="card-text lead fw-bold">${product.price}</p>
-                <button className="btn btn-outline-dark">Buy now</button>
+                <button className="btn btn-outline-dark" onClick={() => addToCart(product)}>Buy now</button>
               </div>
             </div>
           </div>
@@ -129,3 +152,5 @@ export const Products = () => {
     </div>
   );
 };
+
+export default Products;

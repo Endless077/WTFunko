@@ -1,6 +1,6 @@
 import {ComponentPreview, Previews} from '@react-buddy/ide-toolbox'
 import {PaletteTree} from './palette'
-import {Navbar} from "../components/Navbar.jsx";
+import {Navbar} from "../components/NavBarComponent/Navbar.jsx";
 
 const ComponentPreviews = () => {
     return (

@@ -1,6 +1,5 @@
-// components/Register.jsx
 import React, { useState } from "react";
-import { Navbar } from "../../../client/src/components/Navbar";
+import { Navbar } from "../Navbar";
 import { Link } from "react-router-dom";
 
 const Register = () => {

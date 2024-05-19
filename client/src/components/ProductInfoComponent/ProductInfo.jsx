@@ -1,9 +1,9 @@
-// components/ProductInfo.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Navbar } from "./Navbar";
+import { Navbar } from "../Navbar";
 import "./ProductInfo.css";
 
+//TODO : When switching to real backend, change product.thumbnail into product.image
 const ProductInfo = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -11,7 +11,7 @@ const ProductInfo = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+        const response = await fetch(`https://dummyjson.com/products/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -34,7 +34,7 @@ const ProductInfo = () => {
           <div className="col-md-6">
             <div className="card h-100 text-center p-4">
               <img
-                src={product.image}
+                src={product.thumbnail}
                 className="card-img-top"
                 alt={product.title}
                 height={400}

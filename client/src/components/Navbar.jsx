@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import "./Navbar.css";
 
 export const Navbar = () => {
+
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
 
@@ -18,6 +20,7 @@ export const Navbar = () => {
   };
 
   return (
+    <>
     <nav className="navbar navbar-expand-lg navbar-light py-3 bg-white">
       <div className="container">
         <Link className="navbar-brand fw-bold fs-4" to="/">
@@ -62,5 +65,7 @@ export const Navbar = () => {
         </div>
       </div>
     </nav>
+
+    </>  
   );
 };
