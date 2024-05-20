@@ -1,18 +1,46 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Navbar";
-import { Link } from "react-router-dom";
+import "./Register.css"; // Assuming you have a CSS file for styling
 
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate(); // Use useNavigate instead of useHistory
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logica per la gestione della registrazione
-    console.log("Username:", username);
-    console.log("Email:", email);
-    console.log("Password:", password);
+    setError("");
+
+    try {
+      const response = await axios.get(
+        "https://jsonplaceholder.typicode.com/users"
+      );
+      const users = response.data;
+
+      const userExists = users.some(
+        (user) => user.username === username || user.email === email
+      );
+
+      if (userExists) {
+        setError("Username or email already exists.");
+      } else {
+        const newUser = { username, email, password };
+        localStorage.setItem("user", JSON.stringify(newUser));
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("An error occurred. Please try again later.");
+    }
+  };
+
+  const isSubmitDisabled = () => {
+    return username === "" || email === "" || password === "";
   };
 
   return (
@@ -64,11 +92,13 @@ const Register = () => {
                       required
                     />
                   </div>
+                  {error && (
+                    <div className="alert alert-danger mt-3">{error}</div>
+                  )}
                   <button
                     type="submit"
-                    className="btn btn-outline-dark w-100"
+                    className="btn btn-outline-dark w-100 mt-3"
                     disabled={isSubmitDisabled()}
-                    onClick={handleSubmit}
                   >
                     Register
                   </button>

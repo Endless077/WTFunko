@@ -1,18 +1,40 @@
-// components/Login.jsx
 import React, { useState } from "react";
 import { Navbar } from "../Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Login.css";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logica per la gestione del login
-    console.log("Email:", email);
-    console.log("Password:", password);
+    setError("");
+
+    try {
+      const response = await axios.get(
+        "https://jsonplaceholder.typicode.com/users"
+      );
+      const users = response.data;
+
+      const user = users.find(
+        //TODO : cambiare u.name in u.password
+        (u) => u.username === username && u.name === password
+      );
+
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+        navigate("/");
+      } else {
+        setError("Invalid email or password.");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("An error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -30,11 +52,11 @@ const Login = () => {
                       Username
                     </label>
                     <input
-                      type="email"
+                      type="username"
                       className="form-control"
-                      id="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                     />
                   </div>
@@ -51,6 +73,7 @@ const Login = () => {
                       required
                     />
                   </div>
+                  {error && <div className="alert alert-danger">{error}</div>}
                   <button type="submit" className="btn btn-outline-dark w-100">
                     Login
                   </button>
