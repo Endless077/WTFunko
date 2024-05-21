@@ -41,3 +41,79 @@
 .custom-search-icon {
   color: #343a40;
 }
+/*----------------------------------------------------------------------------*/
+.sort-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.sort-bar label {
+  margin-bottom: 5px;
+}
+
+.sort-bar select {
+  width: 200px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Styling for the category buttons */
+.category-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-right: 20px;
+}
+
+.category-bar label {
+  margin-bottom: 5px;
+}
+
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.category-buttons .btn {
+  margin-bottom: 10px;
+}
+
+/* Styling for the pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination .page-item {
+  margin: 0 5px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.pagination .page-item.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.pagination .page-item:hover:not(.active) {
+  background-color: #ddd;
+}
+
+.pagination .page-arrow {
+  margin: 0 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #007bff;
+}
+
+.pagination .page-arrow:hover {
+  color: #0056b3;
+}

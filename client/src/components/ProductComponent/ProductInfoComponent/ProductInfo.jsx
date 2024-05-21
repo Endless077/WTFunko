@@ -66,6 +66,8 @@ const ProductInfo = () => {
             </div>
           </div>
           <div className="col-md-6 d-flex flex-column justify-content-center">
+            {/*TODO : AGGIUNGERE L' h2 CON L'INTEREST DEL PRODOTTO (LISTA)*/}
+            {/*TODO : AGGIUNGERE L' h3 CON IL PRODUCT TYPE DEL PRODOTTO (LISTA)*/}
             <h1 className="display-5">{product.title}</h1>
             <p className="lead">{product.description}</p>
             <h3 className="my-4">${product.price}</h3>
@@ -77,6 +79,7 @@ const ProductInfo = () => {
             </button>
           </div>
         </div>
+        {/*TODO : AGGIUNGERE LA PARTE IN CUI FA VEDERE LE IMMAGINI DEI FUNKO RELATED (ID)*/}
       </div>
     </>
   );

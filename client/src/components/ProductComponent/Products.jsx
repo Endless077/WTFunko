@@ -4,12 +4,18 @@ import { FaSearch } from "react-icons/fa";
 import React from "react";
 import "./Products.css";
 
+{
+  /*TODO : METTERE I FILTRI PER : Disney, Sports, Marvel, Anime, Star Wars, Music, Video Games, Pixar, Harry Potter, Pokémon */
+}
 export const Products = () => {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(20);
+  const [sortCriteria, setSortCriteria] = useState("default");
 
   useEffect(() => {
     const getProducts = async () => {
@@ -53,12 +59,8 @@ export const Products = () => {
       setFilter(data);
     } else {
       if (searchTerm.trim() === "") {
-        if (cat === "All") {
-          setFilter(data);
-        } else {
-          const updatedList = data.filter((x) => x.category === cat);
-          setFilter(updatedList);
-        }
+        const updatedList = data.filter((x) => x.category === cat);
+        setFilter(updatedList);
       } else {
         filterProductsByName(searchTerm);
       }
@@ -81,18 +83,57 @@ export const Products = () => {
     setFilter(filteredProducts);
   };
 
+  const sortProducts = (criteria) => {
+    let sortedProducts = [...filter];
+    switch (criteria) {
+      case "price-asc":
+        sortedProducts.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        sortedProducts.sort((a, b) => b.price - a.price);
+        break;
+      case "name-asc":
+        sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "name-desc":
+        sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      default:
+        sortedProducts = data;
+        break;
+    }
+    setFilter(sortedProducts);
+  };
+
+  const handleSortChange = (e) => {
+    setSortCriteria(e.target.value);
+    sortProducts(e.target.value);
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const paginate = (products, pageNumber, productsPerPage) => {
+    const startIndex = (pageNumber - 1) * productsPerPage;
+    const endIndex = startIndex + productsPerPage;
+    return products.slice(startIndex, endIndex);
+  };
+
   const Loading = () => {
     return <>Loading...</>;
   };
 
   const ShowProducts = () => {
+    const paginatedProducts = paginate(filter, currentPage, productsPerPage);
+
     return (
       <>
-        {filter.length === 0 ? (
+        {paginatedProducts.length === 0 ? (
           <p>No products available</p>
         ) : (
           <div className="row">
-            {filter.map((product) => (
+            {paginatedProducts.map((product) => (
               <div key={product.id} className="col-md-3 mb-4">
                 <div
                   className="card h-100 text-center p-4"
@@ -123,6 +164,37 @@ export const Products = () => {
             ))}
           </div>
         )}
+        <div className="pagination">
+          {currentPage > 1 && (
+            <span
+              className="page-arrow"
+              onClick={() => handlePageChange(currentPage - 1)}
+            >
+              &laquo;
+            </span>
+          )}
+          {[...Array(Math.ceil(filter.length / productsPerPage)).keys()].map(
+            (number) => (
+              <button
+                key={number + 1}
+                onClick={() => handlePageChange(number + 1)}
+                className={`page-item ${
+                  currentPage === number + 1 ? "active" : ""
+                }`}
+              >
+                {number + 1}
+              </button>
+            )
+          )}
+          {currentPage < Math.ceil(filter.length / productsPerPage) && (
+            <span
+              className="page-arrow"
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
+              &raquo;
+            </span>
+          )}
+        </div>
       </>
     );
   };
@@ -156,38 +228,55 @@ export const Products = () => {
             </div>
           </div>
         </div>
-        <div className="row">
-          <div className="buttons d-flex justify-content-center mb-5 pb-5">
-            <button
-              className="btn btn-outline-dark me-2"
-              onClick={() => filterProducts("All")}
+        <div className="row justify-content-center mb-4">
+          <div className="category-bar">
+            <label>Categories</label>
+            <div className="category-buttons">
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("All")}
+              >
+                All
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("smartphones")}
+              >
+                Smartphones
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("laptops")}
+              >
+                Laptops
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("fragrances")}
+              >
+                Fragrances
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("skincare")}
+              >
+                Skincare
+              </button>
+            </div>
+          </div>
+          <div className="sort-bar">
+            <label>Sort By</label>
+            <select
+              className="form-select"
+              value={sortCriteria}
+              onChange={handleSortChange}
             >
-              All
-            </button>
-            <button
-              className="btn btn-outline-dark me-2"
-              onClick={() => filterProducts("smartphones")}
-            >
-              Smartphones
-            </button>
-            <button
-              className="btn btn-outline-dark me-2"
-              onClick={() => filterProducts("laptops")}
-            >
-              Laptops
-            </button>
-            <button
-              className="btn btn-outline-dark me-2"
-              onClick={() => filterProducts("fragrances")}
-            >
-              Fragrances
-            </button>
-            <button
-              className="btn btn-outline-dark me-2"
-              onClick={() => filterProducts("skincare")}
-            >
-              Skincare
-            </button>
+              <option value="default">Undo</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
           </div>
         </div>
         <div className="row justify-content-center">
