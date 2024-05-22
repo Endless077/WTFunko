@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./Navbar.css";
 
@@ -38,7 +37,7 @@ export const Navbar = () => {
           <div className="buttons">
             {isLoggedIn ? (
               <>
-                <Link to="/profile" className="btn btn-outline-dark">
+                <Link to="/userInfo" className="btn btn-outline-dark">
                   <i className="fa fa-user me-1"></i>
                   {username}
                 </Link>
@@ -60,7 +59,7 @@ export const Navbar = () => {
               Cart
             </Link>
             <Link
-              to="/"
+              to="https://github.com/Endless077/WTFunko"
               className="btn btn-outline-dark ms-2"
               onClick={handleLogout}
             >

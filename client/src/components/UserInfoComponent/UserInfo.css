@@ -1,0 +1,109 @@
+.user-info-card {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.user-info-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.order-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order-item {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-link {
+  background: #28a745;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.order-link:hover {
+  background: #218838;
+}
+
+.order-total {
+  font-weight: bold;
+  color: #333;
+  margin-left: 10px;
+}
+
+.order-details {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 10px;
+  width: 100%;
+}
+
+.order-details-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.order-items-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.order-item {
+  background-color: #ffffff;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.my-5 {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+.py-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.delete-account-button {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.delete-account-button .btn-danger {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+}

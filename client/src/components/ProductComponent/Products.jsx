@@ -4,9 +4,6 @@ import { FaSearch } from "react-icons/fa";
 import React from "react";
 import "./Products.css";
 
-{
-  /*TODO : METTERE I FILTRI PER : Disney, Sports, Marvel, Anime, Star Wars, Music, Video Games, Pixar, Harry Potter, Pokémon */
-}
 export const Products = () => {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState([]);
@@ -152,12 +149,38 @@ export const Products = () => {
                       {product.title.substring(0, 12)}
                     </h5>
                     <p className="card-text lead fw-bold">${product.price}</p>
-                    <button
-                      className="btn btn-outline-dark"
-                      onClick={() => addToCart(product)}
-                    >
-                      Buy now
-                    </button>
+                    {cart.some((item) => item.id === product.id) ? (
+                      <div>
+                        <button
+                          className="btn btn-dark btn-block mb-2"
+                          onClick={() => addToCart(product, 1)}
+                        >
+                          In Cart
+                        </button>
+                        <select
+                          className="form-select mb-2"
+                          value={
+                            cart.find((item) => item.id === product.id).quantity
+                          }
+                          onChange={(e) =>
+                            handleQuantityChange(product.id, +e.target.value)
+                          }
+                        >
+                          {[...Array(10).keys()].map((number) => (
+                            <option key={number + 1} value={number + 1}>
+                              {number + 1}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn btn-outline-dark btn-block mb-2"
+                        onClick={() => addToCart(product, 1)}
+                      >
+                        Add to Cart
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -232,6 +255,7 @@ export const Products = () => {
           <div className="category-bar">
             <label>Categories</label>
             <div className="category-buttons">
+              {/*TODO : METTERE I FILTRI PER : Disney, Sports, Marvel, Anime, Star Wars, Music, Video Games, Pixar, Harry Potter, Pokémon */}
               <button
                 className="btn btn-outline-dark me-2"
                 onClick={() => filterProducts("All")}
@@ -262,6 +286,66 @@ export const Products = () => {
               >
                 Skincare
               </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Disney")}
+              >
+                Disney
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Sports")}
+              >
+                Sports
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Marvel")}
+              >
+                Marvel
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Anime")}
+              >
+                Anime
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Star Wars")}
+              >
+                Star Wars
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Music")}
+              >
+                Music
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Video Games")}
+              >
+                Video Games
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Pixar")}
+              >
+                Pixar
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Harry Potter")}
+              >
+                Harry Potter
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Pokémon")}
+              >
+                Pokémon
+              </button>
             </div>
           </div>
           <div className="sort-bar">
@@ -271,7 +355,7 @@ export const Products = () => {
               value={sortCriteria}
               onChange={handleSortChange}
             >
-              <option value="default">Undo</option>
+              <option value="default">Default</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="name-asc">Name: A to Z</option>

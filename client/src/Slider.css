@@ -1,30 +1,27 @@
 .slider-container {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-#slider {
-  width: 100%;
-  overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .f_slider {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .f_slider a {
   display: inline-block;
-  margin: 0 10px;
-  overflow: hidden;
+  margin: 0 0px; /* Aumenta lo spazio tra le immagini */
 }
 
 .f_slider img {
-  width: 200px; /* Adjust the width as needed */
+  width: 250px; /* Dimensione desiderata delle immagini */
   height: auto;
-  transition: transform 0.5s ease-in-out;
+  transition: transform 0.3s ease; /* Effetto di transizione */
 }
 
-.f_slider a:hover img {
-  transform: scale(1.1);
+.f_slider img:hover {
+  transform: scale(1.1); /* Effetto di ingrandimento al passaggio del mouse */
 }

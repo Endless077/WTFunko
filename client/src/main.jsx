@@ -10,6 +10,7 @@ import Cart from "./components/CartComponent/Cart.jsx";
 import ProductInfo from "./components/ProductComponent/ProductInfoComponent/ProductInfo.jsx";
 import Login from "./components/LoginComponent/Login.jsx";
 import Register from "./components/RegisterComponent/Register.jsx";
+import UserInfo from "./components/UserInfoComponent/UserInfo.jsx";
 
 import { DevSupport } from "@react-buddy/ide-toolbox";
 
@@ -20,6 +21,7 @@ const routes = [
   { path: "/productInfo/:id", element: <ProductInfo /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
+  { path: "/userInfo", element: <UserInfo /> },
 ];
 
 ReactDOM.createRoot(document.getElementById("root")).render(

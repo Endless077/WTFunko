@@ -91,7 +91,7 @@ const CartPage = () => {
               <thead>
                 <tr>
                   <th>Product Image</th>
-                  <th>Product Name</th> 
+                  <th>Product Name</th>
                   <th>Price</th>
                   <th>Quantity</th>
                   <th>Total</th>
@@ -112,20 +112,24 @@ const CartPage = () => {
                         </Link>
                       </div>
                     </td>
-                    <td>{item.title}</td> 
+                    <td>{item.title}</td>
                     <td>${item.price.toFixed(2)}</td>
                     <td>
                       <div className="d-flex align-items-center">
                         <button
                           className="btn btn-sm btn-primary me-2"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
                         >
                           -
                         </button>
                         <span>{item.quantity}</span>
                         <button
                           className="btn btn-sm btn-primary ms-2"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
                         >
                           +
                         </button>
@@ -148,35 +152,45 @@ const CartPage = () => {
               <table className="cart-table">
                 <tfoot>
                   <tr>
-                    <td colSpan="4" className="text-end"> {/* Adjust colspan to 4 */}
+                    <td colSpan="4" className="text-end">
+                      {" "}
+                      {/* Adjust colspan to 4 */}
                       Subtotal:
                     </td>
                     <td>${calculateSubtotal().toFixed(2)}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end"> {/* Adjust colspan to 4 */}
+                    <td colSpan="4" className="text-end">
+                      {" "}
+                      {/* Adjust colspan to 4 */}
                       VAT (22%):
                     </td>
                     <td>${calculateVat().toFixed(2)}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end"> {/* Adjust colspan to 4 */}
+                    <td colSpan="4" className="text-end">
+                      {" "}
+                      {/* Adjust colspan to 4 */}
                       Shipping Cost:
                     </td>
                     <td>${SHIPPING_COST.toFixed(2)}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end"> {/* Adjust colspan to 4 */}
+                    <td colSpan="4" className="text-end">
+                      {" "}
+                      {/* Adjust colspan to 4 */}
                       Total:
                     </td>
                     <td>${calculateTotal()}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end"> {/* Adjust colspan to 4 */}
+                    <td colSpan="4" className="text-end">
+                      {" "}
+                      {/* Adjust colspan to 4 */}
                       <button
                         className="btn btn-success cart-button"
                         onClick={handlePayment}
