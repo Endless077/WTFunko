@@ -147,8 +147,8 @@ def save_to_json(filename: str, data: dict) -> bool:
 ##################################################################################################
 
 # Current date time
-def current_datetime() -> datetime:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def current_datetime() -> dt:
+    return dt.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # Generate hash string
 def hash_string(string: str) -> str:
@@ -188,7 +188,7 @@ def new_user(username: str, password: str, nome: str, cognome: str) -> dict:
 def new_order(user: dict, funkos: list[tuple], status: str) -> dict:
     order_id = generate_order_id()
     
-    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_date = dt.now().strftime("%Y-%m-%d %H:%M:%S")
     total = sum(funko["price"] * quantity for funko, quantity in funkos)
     return {
         f"#{order_id}":{
