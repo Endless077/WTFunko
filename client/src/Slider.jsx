@@ -48,12 +48,12 @@ const Slider = () => {
               src="/assets/slider/Pixar_Logo.jpg"
               alt="Pixar"
               className="hover-gif"
-              data-hover="/assets/slider/Pixar_Gif.webp"
+              data-hover="/assets/slider/Pixar_Gif.gif"
             />
           </a>
           <a href="ProdottoList?franchise=Pokemon">
             <img
-              src="/assets/slider/Pokemon_Logo.jpg"
+              src="/assets/slider/Pokemon_Logo.png"
               alt="Pokemon"
               className="hover-gif"
               data-hover="/assets/slider/Pokemon_Gif.gif"
