@@ -3,9 +3,46 @@ import pymongo
 from bson import ObjectId
 from pymongo import MongoClient
 
-# Models
-from server.models import *
+# Logging System
+from server.fastapi import LOG_SYS
 
+# Other utils
+from server.models import *
+from server.mongoDB import *
+
+TAG = "Services"
+###################################################################################################
+
+# Init Database
+async def init_database(db_name, collections):
+    # Check if the database already exists
+    if not check_database_exists(db_name):
+        # If the database doesn't exist, create a new database
+        LOG_SYS.write(TAG, f"Database '{db_name}' does not exist.")
+        LOG_SYS.write(TAG, "Creating new database.")
+        create_database(db_name, collections)
+    else:
+        # If the database exists, check for missing collections
+        LOG_SYS.write(TAG, f"Database '{db_name}' exists.")
+        missing_collections = []
+        for collection in collections:
+            if not check_collection_exists(db_name, collection):
+                missing_collections.append(collection)
+        
+        # If there are missing collections, create them
+        if missing_collections:
+            client, db = connect(db_name)
+            for collection in missing_collections:
+                db.create_collection(collection)
+            LOG_SYS.write(TAG, f"Missing collections created: {', '.join(missing_collections)}")
+        else:
+            # Otherwise, all collections are present
+            LOG_SYS.write(TAG, f"All collections {', '.join(collections)} are present.")
+    
+    # Report completion of database initialization
+    LOG_SYS.write(TAG, f"Initialization completed for database '{db_name}'.")
+    
+    
 ###################################################################################################
 
 async def get_user(username: str, password: str) -> User:
