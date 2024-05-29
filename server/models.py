@@ -1,5 +1,8 @@
+# Utils
 from typing import List, Dict, Tuple, Any
 from pydantic import BaseModel
+
+DB_NAME = "WTFunko"
 
 class User(BaseModel):
     ID: str
