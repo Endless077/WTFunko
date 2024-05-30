@@ -1,8 +1,8 @@
 {
     "admin_1": {
-        "ID": "admin_1",
-        "Username": "admin",
-        "Email": "funko@unisa.it",
-        "Password": "35f91b815a68b0ec63a08df8de9fde302de5a84fc577a832be1166e54e33764b"
+        "uid": "admin_1",
+        "username": "admin",
+        "email": "funko@unisa.it",
+        "password": "35f91b815a68b0ec63a08df8de9fde302de5a84fc577a832be1166e54e33764b"
     }
 }

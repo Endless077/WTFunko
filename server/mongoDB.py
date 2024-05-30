@@ -4,7 +4,7 @@ import os
 
 from pymongo import MongoClient
 
-# Example of MongoDB URI
+# Example of MongoDB URI "mongodb://username:password@mongodb.example.com:27017"
 URI = "mongodb://username:password@mongodb.example.com:27017"
 
 ###################################################################################################

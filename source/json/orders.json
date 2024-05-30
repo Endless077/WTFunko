@@ -1,13 +1,12 @@
 {
     "#0HDRXHC0": {
-        "Order ID": "0HDRXHC0",
-        "User": {
-            "ID": "admin_329172",
-            "Name": "Antonio",
-            "Surname": "Garofalo",
-            "Username": "admin"
+        "uid": "0HDRXHC0",
+        "user": {
+            "uid": "admin_329172",
+            "username": "admin",
+            "email": "email"
         },
-        "Products": [
+        "products": [
             [
                 {
                     "uid": 7051374362813,
@@ -29,8 +28,8 @@
                 1
             ]
         ],
-        "Total": 24.0,
-        "Date": "2024-05-09 11:53:33",
-        "Status": "Evaso"
+        "total": 24.0,
+        "date": "2024-05-09 11:53:33",
+        "status": "Evaso"
     }
 }

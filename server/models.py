@@ -5,10 +5,15 @@ from pydantic import BaseModel
 DB_NAME = "WTFunko"
 
 class User(BaseModel):
-    ID: str
-    Username: str
-    Email: str
-    Password: str
+    uid: int
+    username: str
+    email: str
+    password: str
+
+class OrderUser(BaseModel):
+    uid: int
+    username: str
+    email: str
     
 class Product(BaseModel):
     uid: int
@@ -26,8 +31,8 @@ class Product(BaseModel):
     img: str
 
 class Order(BaseModel):
-    order_id: str
-    user: Dict[str, Any]
+    uid: int
+    user: OrderUser
     products: List[Tuple[Product, int]]
     total: float
     date: str
