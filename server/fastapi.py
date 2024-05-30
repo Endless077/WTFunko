@@ -192,12 +192,12 @@ async def updateOrder(order_id: str, order: Order):
 ###################################################################################################
 # Products
 
-# Get all Funko
-@app.get("/getAllFunkos", response_model=List[Product], status_code=200, description="")
-async def getAllFunkos():
+# Get all Product
+@app.get("/getAllProducts", response_model=List[Product], status_code=200, description="")
+async def getAllProducts():
     try:
         LOG_SYS.write(TAG, f"Getting all product from Database.")
-        funkos = get_all_funkos()
+        funkos = get_all_products()
         return {"data": funkos}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -206,12 +206,12 @@ async def getAllFunkos():
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Get Funko info by ID
-@app.get("/getFunkoInfo/{funk_id}", response_model=Product, status_code=200, description="")
-async def getFunkInfo(funk_id: str):
+# Get Product info by ID
+@app.get("/getProductInfo/{product_id}", response_model=Product, status_code=200, description="")
+async def getProductInfo(product_id: str):
     try:
-        LOG_SYS.write(TAG, f"Getting specific product infos by id: {funk_id}.")
-        funko_info = get_funko_info(funk_id)
+        LOG_SYS.write(TAG, f"Getting specific product infos by id: {product_id}.")
+        funko_info = get_product_info(product_id)
         return {"data": funko_info}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -220,12 +220,12 @@ async def getFunkInfo(funk_id: str):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Get Funko by category
+# Search Product by category
 @app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, description="")
 async def getByCategory(category: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by search category: {category}.")
-        funkos = get_funko_by_category(category)
+        funkos = get_product_by_category(category)
         return {"data": funkos}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -234,12 +234,12 @@ async def getByCategory(category: str):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Search Funko
-@app.get("/getResearch/{search_string}", response_model=List[Product], status_code=200, description="")
-async def get_funko_by_search(search_string: str):
+# Search Product by search string
+@app.get("/getBySearch/{search_string}", response_model=List[Product], status_code=200, description="")
+async def getBySearch(search_string: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by search string: {search_string}.")
-        funkos = get_funko_by_search(search_string)
+        funkos = get_product_by_search(search_string)
         return {"data": funkos}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -248,12 +248,12 @@ async def get_funko_by_search(search_string: str):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Sort Funko by criteria
-@app.get("/sortingby/{criteria}", response_model=List[Product], status_code=200, description="")
-async def sort_funko(criteria: str, asc: bool):
+# Sort Product by criteria
+@app.get("/sortingBy/{criteria}", response_model=List[Product], status_code=200, description="")
+async def sortingBy(criteria: str, asc: bool):
     try:
         LOG_SYS.write(TAG, f"Sort products by a specific criteria: {criteria} and by asc: {asc}.")
-        funkos = sort_funko(criteria, asc)
+        funkos = sort_product(criteria, asc)
         return {"data": funkos}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -262,12 +262,26 @@ async def sort_funko(criteria: str, asc: bool):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Insert new Funko
-@app.post("/insertFunko", status_code=201, description="")
-async def insert_new_funko(funko: Product):
+# Search Product by search string
+@app.get("/getFilter", response_model=List[Product], status_code=200, description="")
+async def getFilter(category: str = None, search_string: str = None, criteria: str = None):
     try:
-        LOG_SYS.write(TAG, f"Insert new product information with id: {funko.uid}.")
-        result = insert_funko(funko)
+        LOG_SYS.write(TAG, f"Getting products by combo filter.")
+        funkos = filter_product(category, search_string, criteria)
+        return {"data": funkos}
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+# Insert new Product
+@app.post("/insertProduct", status_code=201, description="")
+async def insertProduct(product: Product):
+    try:
+        LOG_SYS.write(TAG, f"Insert new product information with id: {product.uid}.")
+        result = insert_product(product)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -276,12 +290,12 @@ async def insert_new_funko(funko: Product):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Delete Funko by ID
-@app.delete("/deleteFunko/{funk_id}", status_code=200, description="")
-async def deleteFunko(funk_id: str):
+# Delete Product by ID
+@app.delete("/deleteProduct/{product_id}", status_code=200, description="")
+async def deleteProduct(product_id: str):
     try:
-        LOG_SYS.write(TAG, f"Delete existing product information with id: {funk_id}.")
-        result = delete_funko(funk_id)
+        LOG_SYS.write(TAG, f"Delete existing product information with id: {product_id}.")
+        result = delete_product(product_id)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -290,12 +304,12 @@ async def deleteFunko(funk_id: str):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Update Funko
-@app.put("/updateFunko", status_code=200, description="")
-async def updateFunko(funk_id: str, funko: Product):
+# Update Product
+@app.put("/updateProduct", status_code=200, description="")
+async def updateProduct(product_id: str, product: Product):
     try:
-        LOG_SYS.write(TAG, f"Update existing product information with id: {funk_id}.")
-        result = update_funko(funko)
+        LOG_SYS.write(TAG, f"Update existing product information with id: {product_id}.")
+        result = update_product(product)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -315,7 +329,7 @@ async def about():
 ###################################################################################################
 
 if __name__ == '__main__':
-    LOG_SYS = Logger(f"logs_{dt.now}.txt","../source/logs")
+    LOG_SYS = Logger(f"logs_{dt.now().strftime('%Y%m%d-%H%M%S%f')}.txt","../source/logs")
     LOG_SYS(TAG, "__          _________ ______           _          ")   
     LOG_SYS(TAG, "\ \        / /__   __|  ____|         | |         ")
     LOG_SYS(TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
@@ -329,7 +343,7 @@ if __name__ == '__main__':
     init_database(db_name, collections)
     
     # Uncomment only the first time
-    #fill_collection(db_name, "Products", "../source/json/funko.json")
+    #fill_collection(db_name, "Products", "../source/json/product.json")
     
     uvicorn.run(app, host='127.0.0.1', port=8080)
 
