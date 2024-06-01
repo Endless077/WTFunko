@@ -170,34 +170,33 @@ def generate_funko_id() -> str:
      return ''.join(random.choices(string.digits, k=13))
 
 # Setup a new user
-def new_user(username: str, password: str, nome: str, cognome: str) -> dict:
+def new_user(username: str, email: str, password: str) -> dict:
     user_id = generate_random_id(username)
     
     hashed_password = hash_string(password)
     return {
         f"{username}_{user_id}":{
-            "ID": user_id,
-            "Name": nome,
-            "Surname": cognome,
-            "Username": username,
-            "Password": hashed_password
+            "uid": user_id,
+            "username": username,
+            "email": email,
+            "password": hashed_password
         }
     }
 
 # Setup a new order
-def new_order(user: dict, funkos: list[tuple], status: str) -> dict:
+def new_order(user: dict, products: list[tuple], status: str) -> dict:
     order_id = generate_order_id()
     
     current_date = dt.now().strftime("%Y-%m-%d %H:%M:%S")
-    total = sum(funko["price"] * quantity for funko, quantity in funkos)
+    total = sum(funko["price"] * quantity for funko, quantity in products)
     return {
         f"#{order_id}":{
-            "Order ID": order_id,
-            "User": user,
-            "Products": funkos,
-            "Total": total,
-            "Date": current_date,
-            "Status": status
+            "uid": order_id,
+            "user": user,
+            "products": products,
+            "total": total,
+            "date": current_date,
+            "status": status
         }
     }
 
