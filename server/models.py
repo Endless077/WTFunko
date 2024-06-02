@@ -1,22 +1,25 @@
-# Utils
-from typing import List, Dict, Tuple, Any
+"""
+Defines various classes for handling the database objects.
+"""
+
+from typing import List, Tuple
 from pydantic import BaseModel
 
 DB_NAME = "WTFunko"
 
 class User(BaseModel):
-    uid: int
+    _id: int
     username: str
     email: str
     password: str
 
 class OrderUser(BaseModel):
-    uid: int
+    _id: int
     username: str
     email: str
     
 class Product(BaseModel):
-    uid: int
+    _id: int
     title: str
     product_type: str
     price: float
@@ -31,7 +34,7 @@ class Product(BaseModel):
     img: str
 
 class Order(BaseModel):
-    uid: int
+    _id: int
     user: OrderUser
     products: List[Tuple[Product, int]]
     total: float
