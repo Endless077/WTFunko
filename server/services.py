@@ -12,7 +12,7 @@ TAG = "Services"
     
 async def get_user(username: str, email: str) -> User:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Users
         collection = db["Users"]
@@ -42,7 +42,7 @@ async def get_user(username: str, email: str) -> User:
 
 async def insert_user(user_data: User) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Users
         collection = db["Users"]
@@ -71,7 +71,7 @@ async def insert_user(user_data: User) -> str:
 
 async def delete_user(username: str) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Users
         collection = db["Users"]
@@ -100,7 +100,7 @@ async def delete_user(username: str) -> str:
 
 async def update_user(user_data: User) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Users
         collection = db["Users"]
@@ -129,7 +129,7 @@ async def update_user(user_data: User) -> str:
 
 async def get_orders(username: str) -> List[Order]:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Orders
         collection = db["Orders"]
@@ -161,7 +161,7 @@ async def get_orders(username: str) -> List[Order]:
 
 async def get_order_info(order_id: str) -> Order:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Orders
         collection = db["Orders"]
@@ -191,7 +191,7 @@ async def get_order_info(order_id: str) -> Order:
 
 async def insert_order(order_data: Order) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Orders
         collection = db["Orders"]
@@ -221,7 +221,7 @@ async def insert_order(order_data: Order) -> str:
 
 async def delete_order(order_id: str) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Orders
         collection = db["Orders"]
@@ -249,7 +249,7 @@ async def delete_order(order_id: str) -> str:
 
 async def update_order(order_data: Order) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Orders
         collection = db["Orders"]
@@ -276,39 +276,9 @@ async def update_order(order_data: Order) -> str:
         client.close()
 
 
-async def get_product_info(product_id: str) -> Product:
-    get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
-    try:
-        # Collection Orders
-        collection = db["Products"]
-        
-        # Query to find Funko info in the collection by uid
-        get_logger().write(TAG, f"Query to get products info for uid: {product_id} executing.")
-        products_data = collection.find_one({"uid": product_id})
-
-        # Check if Funko was found
-        if products_data is None:
-            get_logger().write(TAG, f"Product with uid: {product_id} not found.")
-            raise HTTPException(status_code=404, detail="Product not found.")
-
-        # Build an instance of Product using the data retrieved from the database
-        product = Product(**products_data)
-        
-        # Return the Funko info
-        return product
-    
-    except Exception as e:
-        # Other unexpected events occurred
-        get_logger().write(TAG, f"Query to get Funko info for uid: {product_id} failed with error: {e}.")
-        raise HTTPException(status_code=500, detail="Failed to get Funko info.")
-    finally:
-        # Close the MongoDB connection
-        client.close()
-
 async def get_product_by_category(category: str) -> List[Product]:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Products
         collection = db["Products"]
@@ -339,7 +309,7 @@ async def get_product_by_category(category: str) -> List[Product]:
 
 async def get_product_by_search(search_string: str) -> List[Product]:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Products
         collection = db["Products"]
@@ -370,7 +340,7 @@ async def get_product_by_search(search_string: str) -> List[Product]:
 
 async def sort_product(criteria: str, price: float = None, asc: bool = True) -> List[Product]:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         collection = db["Products"]
         
@@ -446,7 +416,7 @@ async def filter_product(category: str = None, search_string: str = None, criter
 
 async def insert_product(product_data: Product) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Products
         collection = db["Products"]
@@ -474,7 +444,7 @@ async def insert_product(product_data: Product) -> str:
 
 async def delete_product(product_id: str) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Products
         collection = db["Products"]
@@ -502,7 +472,7 @@ async def delete_product(product_id: str) -> str:
 
 async def update_product(product_data: Product) -> str:
     get_logger().write(TAG, f"Connect to the database {DB_NAME} by URI {URI}.")
-    client, db = connect(DB_NAME, URI)
+    client, db = connect_to_database(DB_NAME, URI)
     try:
         # Collection Products
         collection = db["Products"]

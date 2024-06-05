@@ -3,23 +3,28 @@ Defines various classes for handling the database objects.
 """
 
 from typing import List, Tuple
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from bson.objectid import ObjectId
+
+
 
 DB_NAME = "WTFunko"
 
 class User(BaseModel):
-    _id: int
+    id: int = Field(alias='_id')
     username: str
     email: str
     password: str
 
+
 class OrderUser(BaseModel):
-    _id: int
+    id: int = Field(alias='_id')
     username: str
     email: str
     
+
 class Product(BaseModel):
-    _id: int
+    id: int = Field(alias='_id')
     title: str
     product_type: str
     price: float
@@ -33,8 +38,9 @@ class Product(BaseModel):
     description: str
     img: str
 
+
 class Order(BaseModel):
-    _id: int
+    id: int = Field(alias='_id')
     user: OrderUser
     products: List[Tuple[Product, int]]
     total: float

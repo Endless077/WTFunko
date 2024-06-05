@@ -69,7 +69,7 @@ def read_json(json_file):
 
 def main():
     client = MongoClient("mongodb://localhost:27017/")
-    db = connect(client, "WTFunko")
+    db = connect_to_database(client, "WTFunko")
     # Connect database.
     # Check if Mongo already has the collection inserted.
     # Read the JSON file for funko pops.

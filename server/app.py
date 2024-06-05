@@ -22,13 +22,15 @@ from datetime import datetime as dt
 # Utils
 import logging
 from logger import get_logger
+from database import *
 from server.models import *
 from server.services import *
 
 # To Run: uvicorn server:app --host 127.0.0.1 --port 8080 --reload
 # To Run: uvicorn server:app --host 127.0.0.1 --port 8080
 
-LOG_SYS = None
+LOG_SYS = get_logger()
+DB = get_database()
 TAG = "FastAPI"
 
 logging.basicConfig(level=logging.DEBUG)
@@ -54,9 +56,10 @@ app = FastAPI(title="FastAPI - ML Test Suite",
 
 origins = [
     "http://localhost",
-    "http://localhost:8080",
+    "http://localhost:8000",
     "http://127.0.0.1",
-    "http://127.0.0.1:8080"
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000"
 ]
 
 app.add_middleware(
@@ -191,34 +194,6 @@ async def updateOrder(order_id: str, order: Order):
     except Exception as e:
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-      
-
-@app.get("/getAllProducts", response_model=List[Product], status_code=200, description="")
-async def getAllProducts():
-    try:
-        LOG_SYS.write(TAG, f"Getting all product from Database.")
-        funkos = get_all_products()
-        return {"data": funkos}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/getProductInfo/{product_id}", response_model=Product, status_code=200, description="")
-async def getProductInfo(product_id: str):
-    try:
-        LOG_SYS.write(TAG, f"Getting specific product infos by id: {product_id}.")
-        funko_info = get_product_info(product_id)
-        return {"data": funko_info}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, description="")
@@ -317,24 +292,48 @@ async def updateProduct(product_id: str, product: Product):
     except Exception as e:
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/getProduct/{product_id}", response_model=Product, status_code=200, description="Get a specific product.")
+async def getProduct(product_id: int):
+    try:
+        LOG_SYS.write(TAG, f"Getting specific product by id: {product_id}.")
+        funko = await get_product(product_id)
+        return funko
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/getAllProducts", response_model=List[Product], status_code=200, description="Get all products.")
+async def getAllProducts():
+    try:
+        LOG_SYS.write(TAG, f"Getting all product from Database.")
+        funkos = await get_all_products()
+        return funkos
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get('/', status_code=200, tags=["root"])
-async def main():
+async def main():    
+    await connect_to_database()
     show_server_welcome_message()
-    db_name = "WTFunko"
-    client = MongoClient("mongodb://localhost:27017/")
-    db = connect(client, db_name)
     # This should ideally be commented as its needed only the first time we run the server.
-    populate_database_from_initial_dataset(db)
-    await get_all_products(db)
-    client.close()
+    await populate_database_from_initial_dataset()
+    #shutdown()
     return {"What The": "Funko"}
 
 
 def show_server_welcome_message():
     print("Starting the server...")
-    LOG_SYS = get_logger()
     LOG_SYS.write(TAG, "__          _________ ______           _          ")   
     LOG_SYS.write(TAG, "\ \        / /__   __|  ____|         | |         ")
     LOG_SYS.write(TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
@@ -343,6 +342,5 @@ def show_server_welcome_message():
     LOG_SYS.write(TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
     
 
-
 if __name__ == '__main__':
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host=origins, port=8000)

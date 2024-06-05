@@ -17,10 +17,11 @@ export const Products = () => {
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const response = await fetch("https://dummyjson.com/products");
+      const response = await fetch("http://localhost:8000/getAllProducts");
       const result = await response.json();
-      setData(result.products);
-      setFilter(result.products);
+      setData(result);
+      console.log(result);
+      setFilter(result);
       setLoading(false);
     };
 
