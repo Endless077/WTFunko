@@ -27,7 +27,7 @@ class Logger(object):
             else:
                 if not os.path.exists(f"./{out_dir}"):
                     os.mkdir(f"./{out_dir}")
-                curr_date = dt.now().isoformat.replace(':', '-')
+                curr_date = dt.now().isoformat().replace(':', '-')
                 self._log = open(f"./{out_dir}/{filename}_{curr_date}.txt", "x")
         else:
             self._log = None

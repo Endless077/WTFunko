@@ -55,12 +55,8 @@ app = FastAPI(title="FastAPI - ML Test Suite",
               version="1.0"
               )
 
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://127.0.0.1",
-    "http://127.0.0.1:8000"
-]
+# TODO: da modificare la CORS.
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,

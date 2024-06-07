@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { Navbar } from "../../Navbar";
 import "./ProductInfo.css";
 
-//TODO : When switching to real backend, change product.thumbnail into product.image
 const ProductInfo = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -12,7 +11,7 @@ const ProductInfo = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://dummyjson.com/products/${id}`);
+        const response = await fetch(`http://localhost:8000/getProduct/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -58,7 +57,7 @@ const ProductInfo = () => {
           <div className="col-md-6">
             <div className="card h-100 text-center p-4">
               <img
-                src={product.thumbnail}
+                src={product.img}
                 className="card-img-top"
                 alt={product.title}
                 height={400}
@@ -66,6 +65,8 @@ const ProductInfo = () => {
             </div>
           </div>
           <div className="col-md-6 d-flex flex-column justify-content-center">
+            <h2>{product.interest[0]}</h2>
+            <h3>{product.product_type}</h3>
             {/*TODO : AGGIUNGERE L' h2 CON L'INTEREST DEL PRODOTTO (LISTA)*/}
             {/*TODO : AGGIUNGERE L' h3 CON IL PRODUCT TYPE DEL PRODOTTO (LISTA)*/}
             <h1 className="display-5">{product.title}</h1>

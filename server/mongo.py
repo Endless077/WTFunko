@@ -38,36 +38,32 @@ async def connect(host="localhost", port=27017, db_name="", username=None, passw
         DATABASE = get_database()
         
         LOG_SYS.write(TAG, "Population of the database.")
-        populate_database()
+        await populate_database()
     except Exception as e:
         LOG_SYS.write(TAG, "Error connecting to MongoDB: ", e)
 
+
 async def populate_database():
     try:
-        # Paths to the datasets
         dataset_path = '../source/json/'
         users_dataset_path = dataset_path + 'users.json'
         orders_dataset_path = dataset_path + 'orders.json'
         products_dataset_path = dataset_path + 'products.json'
-        
-        # Reading the datasets
-        users_dataset = await read_json(users_dataset_path)
-        orders_dataset = await read_json(orders_dataset_path)
-        products_dataset = await read_json(products_dataset_path)
-        
-        # Access to Users collection
+    
+        products_dataset = read_json(products_dataset_path)
+        users_dataset = read_json(users_dataset_path)
+        orders_dataset = read_json(orders_dataset_path)
+
         users = DATABASE["Users"]
-        
+
         # Check if the Users collection is already populated
         count = await users.count_documents({})
         if count > 0:
             LOG_SYS.write(TAG, "A collection for users already exists.")
         else:
-            # Insert documents into the Users collection
             result = await users.insert_many(users_dataset)
             LOG_SYS.write(TAG, f"Filled the users collection with {len(result.inserted_ids)} documents.")
         
-        # Access to Orders collection
         orders = DATABASE["Orders"]
         
         # Check if the Orders collection is already populated
@@ -75,19 +71,15 @@ async def populate_database():
         if count > 0:
             LOG_SYS.write(TAG, "A collection for orders already exists.")
         else:
-            # Insert documents into the Orders collection
             result = await orders.insert_many(orders_dataset)
             LOG_SYS.write(TAG, f"Filled the orders collection with {len(result.inserted_ids)} documents.")
         
-        # Access to Products collection
         products = DATABASE["Products"]
-        
         # Check if the Products collection is already populated
         count = await products.count_documents({})
         if count > 0:
             LOG_SYS.write(TAG, "A collection for products already exists.")
         else:
-            # Insert documents into the Products collection
             data = list(products_dataset.values())
             result = await products.insert_many(data)
             LOG_SYS.write(TAG, f"Filled the funko pops collection with {len(result.inserted_ids)} documents.")

@@ -6,3 +6,5 @@ __pycache__
 
 # Virtual Environment Python
 venv
+myenv
+node_modules
