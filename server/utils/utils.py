@@ -7,12 +7,12 @@ import pandas as pd
 
 # OS libraries
 import os
-import sys
-from datetime import datetime as dt
 
 # Struct libreries
 import json
-import csv
+
+# Time libreries
+from datetime import datetime as dt
 
 # String libraries
 import re
@@ -76,6 +76,30 @@ def clean_values(values: dict):
 
 ##################################################################################################
 
+def read_json(json_file):
+    if not os.path.exists(json_file):
+        print(f"File '{json_file}' not found.")
+        return
+    try:
+        with open(json_file, 'r') as file:
+            data = json.load(file)
+    except Exception as e:
+        print("Error filling collection:", e)
+        
+    return data
+
+def save_to_json(filename: str, data: dict) -> bool:
+    try:
+        # Create and open the JSON file
+        with open(filename, 'w') as json_file:
+            # Add the input dict to the JSON file
+            json.dump(data, json_file, indent=4)
+        return True
+    
+    except Exception as e:
+        print("Error while saving JSON file:", e)
+        return False
+    
 def append_to_json(filename: str, data: dict) -> bool:
     try:
         # Check if JSON file exist
@@ -99,29 +123,11 @@ def append_to_json(filename: str, data: dict) -> bool:
         print("Error while appending to JSON file:", e)
         return False
 
-
-def save_to_json(filename: str, data: dict) -> bool:
-    try:
-        # Create and open the JSON file
-        with open(filename, 'w') as json_file:
-            # Add the input dict to the JSON file
-            json.dump(data, json_file, indent=4)
-        return True
-    
-    except Exception as e:
-        print("Error while saving JSON file:", e)
-        return False
-
 ##################################################################################################
-
-# Current date time
-def current_datetime() -> dt:
-    return dt.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # Generate hash string
 def hash_string(string: str) -> str:
     return hashlib.sha256(string.encode()).hexdigest()
-
 
 ##################################################################################################
 
@@ -144,7 +150,7 @@ def new_user(username: str, email: str, password: str) -> dict:
     hashed_password = hash_string(password)
     return {
         f"{username}_{user_id}":{
-            "uid": user_id,
+            "_id": user_id,
             "username": username,
             "email": email,
             "password": hashed_password
@@ -159,7 +165,7 @@ def new_order(user: dict, products: list[tuple], status: str) -> dict:
     total = sum(funko["price"] * quantity for funko, quantity in products)
     return {
         f"#{order_id}":{
-            "uid": order_id,
+            "_id": order_id,
             "user": user,
             "products": products,
             "total": total,
@@ -176,7 +182,7 @@ def new_funko(title, product_type: str, price: float,
     funko_id = generate_funko_id()
     return {
         f"funko_{funko_id}":{
-            "uid": funko_id,
+            "_id": funko_id,
             "title": title,
             "product_type": product_type,
             "price": price,
@@ -191,3 +197,5 @@ def new_funko(title, product_type: str, price: float,
             "img": img
         }
     }
+
+##################################################################################################

@@ -1,12 +1,4 @@
-"""
-The fastAPI server for the application WTFunko.
-"""
-
-import sys
-import os
-# Add the project root directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-
+# FastAPI
 from fastapi import FastAPI, HTTPException, Request, Response
 
 # Security & Middleware
@@ -20,17 +12,26 @@ import uvicorn
 from datetime import datetime as dt
 
 # Utils
+import os
+import sys
+import asyncio
 import logging
-from logger import get_logger
-from database import *
+
+# Own Modules
+# Add the project root directory to the Python path
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+
+from utils.logger import get_logger
+from utils.database import *
 from server.models import *
-from server.services import *
+from server.mongo import *
+
+###################################################################################################
 
 # To Run: uvicorn server:app --host 127.0.0.1 --port 8080 --reload
 # To Run: uvicorn server:app --host 127.0.0.1 --port 8080
 
 LOG_SYS = get_logger()
-DB = get_database()
 TAG = "FastAPI"
 
 logging.basicConfig(level=logging.DEBUG)
@@ -58,7 +59,6 @@ origins = [
     "http://localhost",
     "http://localhost:8000",
     "http://127.0.0.1",
-    "http://127.0.0.1:5173",
     "http://127.0.0.1:8000"
 ]
 
@@ -70,25 +70,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-TAG = "FastAPI"
-
+###################################################################################################
 
 @app.get("/getUser", status_code=200, response_model=User, description="Get a specific user by username or email.")
 async def getUser(username: str, email: str):
     try:
         LOG_SYS.write(TAG, f"Getting user information with username: {username} or email: {email}.")
-        user_data = get_user(username, email)
-        return {"data": user_data}
+        user_data = await get_user(username, email)
+        return user_data
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An error occured with Excepytion: {e}")
         raise e
 
 
-@app.post("/insertUser", status_code=201, description="Insert a new user information into database.")
+@app.post("/insertUser", status_code=201, description="Insert a new user in the database.")
 async def insertUser(user: User):
     try:
-        LOG_SYS.write(TAG, f"Insert new user information into db with username: {user.Username}.")
-        result = insert_user(user)
+        LOG_SYS.write(TAG, f"Insert new user information with username: {user.username}.")
+        result = await insert_user(user)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -102,7 +101,7 @@ async def insertUser(user: User):
 async def delete_existing_user(username: str):
     try:
         LOG_SYS.write(TAG, f"Delete existing user information with username: {username}.")
-        result = delete_user(username)
+        result = await delete_user(username)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -116,7 +115,7 @@ async def delete_existing_user(username: str):
 async def updateUser(username: str, user: User):
     try:
         LOG_SYS.write(TAG, f"Update existing user information with username: {username}.")
-        result = update_user(user)
+        result = await update_user(user)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -126,12 +125,14 @@ async def updateUser(username: str, user: User):
         raise HTTPException(status_code=500, detail=str(e))
       
 
-@app.get("/getUserOrders", status_code=200, response_model=List[Order], description="Get all orders form a user account by username.")
+###################################################################################################
+
+@app.get("/getUserOrders", status_code=200, response_model=List[Order], description="Get all orders from a user account by username.")
 async def getUserOrders(username: str):
     try:
         LOG_SYS.write(TAG, f"Getting all orders information from user account with username: {username}.")
-        orders = get_orders(username)
-        return {"data": orders}
+        orders = await get_orders(username)
+        return orders
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
         raise e
@@ -144,8 +145,8 @@ async def getUserOrders(username: str):
 async def getOrderInfo(order_id: str):
     try:
         LOG_SYS.write(TAG, f"Getting all information of a specifc order with id: {order_id}.")
-        order_info = get_order_info(order_id)
-        return {"data": order_info}
+        order_info = await get_order_info(order_id)
+        return order_info
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
         raise e
@@ -154,11 +155,11 @@ async def getOrderInfo(order_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/insertOrder", status_code=201, description="Insert a new order information into database")
+@app.post("/insertOrder", status_code=201, description="Insert a new order in the database.")
 async def insertOrder(order: Order):
     try:
         LOG_SYS.write(TAG, f"Insert new order information with username: {order.order_id}.")
-        result = insert_order(order)
+        result = await insert_order(order)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -172,7 +173,7 @@ async def insertOrder(order: Order):
 async def deleteOrder(order_id: str):
     try:
         LOG_SYS.write(TAG, f"Delete existing order information with id: {order_id}.")
-        result = delete_order(order_id)
+        result = await delete_order(order_id)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -186,7 +187,7 @@ app.put("/updateOrder", status_code=200, description="Update a specific order in
 async def updateOrder(order_id: str, order: Order):
     try:
         LOG_SYS.write(TAG, f"Update existing order information with id: {order_id}.")
-        result = update_order(order)
+        result = await update_order(order)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -195,125 +196,40 @@ async def updateOrder(order_id: str, order: Order):
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, description="")
-async def getByCategory(category: str):
-    try:
-        LOG_SYS.write(TAG, f"Getting products by search category: {category}.")
-        funkos = get_product_by_category(category)
-        return {"data": funkos}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/getBySearch/{search_string}", response_model=List[Product], status_code=200, description="")
-async def getBySearch(search_string: str):
-    try:
-        LOG_SYS.write(TAG, f"Getting products by search string: {search_string}.")
-        funkos = get_product_by_search(search_string)
-        return {"data": funkos}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/sortingBy/{criteria}", response_model=List[Product], status_code=200, description="")
-async def sortingBy(criteria: str, asc: bool):
-    try:
-        LOG_SYS.write(TAG, f"Sort products by a specific criteria: {criteria} and by asc: {asc}.")
-        funkos = sort_product(criteria, asc)
-        return {"data": funkos}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/getFilter", response_model=List[Product], status_code=200, description="")
-async def getFilter(category: str = None, search_string: str = None, criteria: str = None):
-    try:
-        LOG_SYS.write(TAG, f"Getting products by combo filter.")
-        funkos = filter_product(category, search_string, criteria)
-        return {"data": funkos}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
-@app.post("/insertProduct", status_code=201, description="")
-async def insertProduct(product: Product):
-    try:
-        LOG_SYS.write(TAG, f"Insert new product information with id: {product._id}.")
-        result = insert_product(product)
-        return {"message": result}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.delete("/deleteProduct/{product_id}", status_code=200, description="")
-async def deleteProduct(product_id: str):
-    try:
-        LOG_SYS.write(TAG, f"Delete existing product information with id: {product_id}.")
-        result = delete_product(product_id)
-        return {"message": result}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.put("/updateProduct", status_code=200, description="")
-async def updateProduct(product_id: str, product: Product):
-    try:
-        LOG_SYS.write(TAG, f"Update existing product information with id: {product_id}.")
-        result = update_product(product)
-        return {"message": result}
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
-@app.get("/getProduct/{product_id}", response_model=Product, status_code=200, description="Get a specific product.")
-async def getProduct(product_id: int):
-    try:
-        LOG_SYS.write(TAG, f"Getting specific product by id: {product_id}.")
-        funko = await get_product(product_id)
-        return funko
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
+###################################################################################################
 
 @app.get("/getAllProducts", response_model=List[Product], status_code=200, description="Get all products.")
 async def getAllProducts():
     try:
         LOG_SYS.write(TAG, f"Getting all product from Database.")
-        funkos = await get_all_products()
-        return funkos
+        products = await get_all_products()
+        return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/getProduct/{product_id}", response_model=Product, status_code=200, description="Get a specific producs list by id.")
+async def getProduct(product_id: int):
+    try:
+        LOG_SYS.write(TAG, f"Getting specific product by id: {product_id}.")
+        products = await get_product(product_id)
+        return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, description="Get a specific products list by category.")
+async def getByCategory(category: str):
+    try:
+        LOG_SYS.write(TAG, f"Getting products by search category: {category}.")
+        products = await get_product_by_category(category)
+        return products
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
         raise e
@@ -322,25 +238,115 @@ async def getAllProducts():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/getBySearch/{search_string}", response_model=List[Product], status_code=200, description="Get a specific products list by searching string.")
+async def getBySearch(search_string: str):
+    try:
+        LOG_SYS.write(TAG, f"Getting products by search string: {search_string}.")
+        products = await get_product_by_search(search_string)
+        return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/sortingBy/{criteria}", response_model=List[Product], status_code=200, description="Get a specific products list sorted by a specific criteria.")
+async def sortingBy(criteria: str, asc: bool):
+    try:
+        LOG_SYS.write(TAG, f"Sort products by a specific criteria: {criteria} and by asc: {asc}.")
+        products = await sort_product(criteria, asc)
+        return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/getFilter", response_model=List[Product], status_code=200, description="Get a specific products list by combo filter.")
+async def getFilter(category: str = None, search_string: str = None, criteria: str = None):
+    try:
+        LOG_SYS.write(TAG, f"Getting products by combo filter.")
+        products = await filter_product(category, search_string, criteria)
+        return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.post("/insertProduct", status_code=201, description="Insert a new product in the database.")
+async def insertProduct(product: Product):
+    try:
+        LOG_SYS.write(TAG, f"Insert new product information with id: {product._id}.")
+        result = await insert_product(product)
+        return {"message": result}
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/deleteProduct/{product_id}", status_code=200, description="Delete a specific product information by id.")
+async def deleteProduct(product_id: str):
+    try:
+        LOG_SYS.write(TAG, f"Delete existing product information with id: {product_id}.")
+        result = await delete_product(product_id)
+        return {"message": result}
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/updateProduct", status_code=200, description="Update a specific product information by id.")
+async def updateProduct(product_id: str, product: Product):
+    try:
+        LOG_SYS.write(TAG, f"Update existing product information with id: {product_id}.")
+        result = await update_product(product)
+        return {"message": result}
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get('/', status_code=200, tags=["root"])
-async def main():    
-    await connect_to_database()
-    show_server_welcome_message()
-    # This should ideally be commented as its needed only the first time we run the server.
-    await populate_database_from_initial_dataset()
-    #shutdown()
-    return {"What The": "Funko"}
+@app.get('/about', status_code=200, tags=["root"])
+async def about():
+    return {"App Name": "WTFunko"}
 
+###################################################################################################
 
-def show_server_welcome_message():
-    print("Starting the server...")
+def welcome_message():
     LOG_SYS.write(TAG, "__          _________ ______           _          ")   
     LOG_SYS.write(TAG, "\ \        / /__   __|  ____|         | |         ")
     LOG_SYS.write(TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
     LOG_SYS.write(TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
     LOG_SYS.write(TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
     LOG_SYS.write(TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
-    
 
+def shutdwon():
+    try:
+        LOG_SYS.write(TAG, "Closing Database MongDB connection.")
+        close_connection()
+        LOG_SYS.write(TAG, "Shutdown FastAPI server.")
+        os.kill(os.getpid(), 9)
+    except Exception as e:  
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+    
+    
 if __name__ == '__main__':
-    uvicorn.run(app, host=origins, port=8000)
+    welcome_message()
+    asyncio.run(connect(host="localhost", port=27017, db_name="WTFunko"))
+    uvicorn.run(app, host="127.0.0.1", port=8000)

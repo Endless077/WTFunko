@@ -1,5 +1,8 @@
-# Virtual Environment Python
-venv
+# Logging Files
+/source/logs/log*
 
 # Python Cache
 __pycache__
+
+# Virtual Environment Python
+venv

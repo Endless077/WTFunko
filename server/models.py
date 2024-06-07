@@ -1,48 +1,37 @@
-"""
-Defines various classes for handling the database objects.
-"""
-
+# Models
 from typing import List, Tuple
 from pydantic import BaseModel, Field
-from bson.objectid import ObjectId
-
-
-
-DB_NAME = "WTFunko"
 
 class User(BaseModel):
-    id: int = Field(alias='_id')
-    username: str
-    email: str
-    password: str
-
+    id: int = Field(alias='_id', description="Unique identifier for the user")
+    username: str = Field(..., description="Username of the user")
+    email: str = Field(..., description="Email address of the user")
+    password: str = Field(..., description="Password of the user")
 
 class OrderUser(BaseModel):
-    id: int = Field(alias='_id')
-    username: str
-    email: str
-    
+    id: int = Field(alias='_id', description="Unique identifier for the user in an order")
+    username: str = Field(..., description="Username of the user in an order")
+    email: str = Field(..., description="Email address of the user in an order")
 
 class Product(BaseModel):
-    id: int = Field(alias='_id')
-    title: str
-    product_type: str
-    price: float
-    interest: List[str]
-    license: List[str]
-    tags: List[str]
-    vendor: str
-    form_factor: List[str]
-    feature: List[str]
-    related: List[int]
-    description: str
-    img: str
-
+    id: int = Field(alias='_id', description="Unique identifier for the product")
+    title: str = Field(..., description="Title of the product")
+    product_type: str = Field(..., description="Type of the product")
+    price: float = Field(..., description="Price of the product")
+    interest: List[str] = Field(..., description="List of interests associated with the product")
+    license: List[str] = Field(..., description="List of licenses for the product")
+    tags: List[str] = Field(..., description="Tags associated with the product")
+    vendor: str = Field(..., description="Vendor of the product")
+    form_factor: List[str] = Field(..., description="Form factor of the product")
+    feature: List[str] = Field(..., description="Features of the product")
+    related: List[int] = Field(..., description="List of related product IDs")
+    description: str = Field(..., description="Description of the product")
+    img: str = Field(..., description="Image URL of the product")
 
 class Order(BaseModel):
-    id: int = Field(alias='_id')
-    user: OrderUser
-    products: List[Tuple[Product, int]]
-    total: float
-    date: str
-    status: str
+    id: int = Field(alias='_id', description="Unique identifier for the order")
+    user: OrderUser = Field(..., description="User associated with the order")
+    products: List[Tuple[Product, int]] = Field(..., description="List of products and their quantities in the order")
+    total: float = Field(..., description="Total price of the order")
+    date: str = Field(..., description="Date of the order")
+    status: str = Field(..., description="Status of the order")
