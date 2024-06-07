@@ -4,7 +4,9 @@
 # Python Cache
 __pycache__
 
+# Node Modules
+node_modules
+
 # Virtual Environment Python
 venv
 myenv
-node_modules

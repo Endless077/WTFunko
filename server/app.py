@@ -15,7 +15,6 @@ from datetime import datetime as dt
 import os
 import sys
 import asyncio
-import logging
 
 # Own Modules
 # Add the project root directory to the Python path
@@ -34,10 +33,6 @@ from server.mongo import *
 LOG_SYS = get_logger()
 TAG = "FastAPI"
 
-logging.basicConfig(level=logging.DEBUG)
-log = logging.getLogger('pymongo')
-log.setLevel(logging.WARNING)
-
 app = FastAPI(title="FastAPI - ML Test Suite",
               description="A simple and fast api suite for a WTFunko e-commerce.",
               summary="Some easy API for WTFunko website.",
@@ -55,8 +50,14 @@ app = FastAPI(title="FastAPI - ML Test Suite",
               version="1.0"
               )
 
-# TODO: da modificare la CORS.
-origins = ["*"]
+origins = [
+    "http://127.0.0.1",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:27017",
+    "http://localhost",
+    "http://localhost:5173",
+    "http://localhost27017"
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,6 +68,30 @@ app.add_middleware(
 )
 
 ###################################################################################################
+
+@app.get("/login", status_code=200, response_model=User, description="Login a user account.")
+async def login(username: str, password: str):
+    try:
+        LOG_SYS.write(TAG, f"Login user with username: {username} and password: {password}.")
+        user_data = await get_user(username)
+        
+        hashedPassword = user_data.password
+        if(hash_string_match(password, hashedPassword)):
+            return user_data
+        else:
+            raise HTTPException(status_code=401, detail="User password don't match")
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An error occured with Excepytion: {e}")
+        raise e
+
+@app.post("/signup", status_code=201, description="Signup a user account.")
+async def signup(user: User):
+    try:
+        LOG_SYS.write(TAG, f"Signup user with username: {user.username} and email: {user.email}")
+        await insert_user(user)
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An error occured with Excepytion: {e}")
+        raise e
 
 @app.get("/getUser", status_code=200, response_model=User, description="Get a specific user by username or email.")
 async def getUser(username: str, email: str):
@@ -93,7 +118,7 @@ async def insertUser(user: User):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/user/{username}", status_code=200, description="Delete a specific user information by username.")
+@app.delete("/deleteUser/{username}", status_code=200, description="Delete a specific user information by username.")
 async def delete_existing_user(username: str):
     try:
         LOG_SYS.write(TAG, f"Delete existing user information with username: {username}.")

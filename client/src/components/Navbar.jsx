@@ -18,8 +18,8 @@ export const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("cart");
-    setIsLoggedIn(false);
     setUsername("");
+    setIsLoggedIn(false);
     window.location.reload();
   };
 

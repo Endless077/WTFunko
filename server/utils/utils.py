@@ -2,7 +2,7 @@
 
 # Math Libraries
 import random
-import hashlib
+import bcrypt
 import pandas as pd
 
 # OS libraries
@@ -126,8 +126,13 @@ def append_to_json(filename: str, data: dict) -> bool:
 ##################################################################################################
 
 # Generate hash string
-def hash_string(string: str) -> str:
-    return hashlib.sha256(string.encode()).hexdigest()
+def hash_string(string: str) -> bytes:
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(string.encode(), salt)
+    return hashed
+
+def hash_string_match(string: str, hashed: bytes) -> bool:
+    return bcrypt.checkpw(string.encode(), hashed)
 
 ##################################################################################################
 
@@ -161,7 +166,7 @@ def new_user(username: str, email: str, password: str) -> dict:
 def new_order(user: dict, products: list[tuple], status: str) -> dict:
     order_id = generate_order_id()
     
-    current_date = dt.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_date = dt.now().isoformat()
     total = sum(funko["price"] * quantity for funko, quantity in products)
     return {
         f"#{order_id}":{

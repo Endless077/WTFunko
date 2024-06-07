@@ -42,7 +42,6 @@ async def connect(host="localhost", port=27017, db_name="", username=None, passw
     except Exception as e:
         LOG_SYS.write(TAG, "Error connecting to MongoDB: ", e)
 
-
 async def populate_database():
     try:
         dataset_path = '../source/json/'
@@ -75,6 +74,7 @@ async def populate_database():
             LOG_SYS.write(TAG, f"Filled the orders collection with {len(result.inserted_ids)} documents.")
         
         products = DATABASE["Products"]
+
         # Check if the Products collection is already populated
         count = await products.count_documents({})
         if count > 0:
@@ -91,14 +91,17 @@ async def populate_database():
 
 ###################################################################################################
 
-async def get_user(username: str, email: str) -> User:
+async def get_user(username: str, email: str = None) -> User:
     try:
         # Collection Users
         collection = DATABASE["Users"]
         
         # Execute the query to find the user in the collection by username or password
         LOG_SYS.write(TAG, f"Query to get user information by username: {username} or email: {email} executing.")
-        user_data = collection.find_one({"$or": [{"username": username}, {"Email": email}]})
+        query = {"username": username}
+        if email is not None:
+            query = {"$or": [{"username": username}, {"Email": email}]}
+        user_data = collection.find_one(query)
 
         # If the user is not found in the database, raise an exception
         if user_data is None:

@@ -4,8 +4,8 @@ from pymongo import MongoClient
 # Example of MongoDB URI "mongodb://username:password@mongodb.example.com:27017"
 #URI = "mongodb://username:password@mongodb.example.com:27017"
 
-URI = "mongodb://localhost:27017/"
-DB_NAME = "WTFunko"
+URI = ""
+DB_NAME = ""
 
 class Database(object):
     _instance = None
