@@ -19,7 +19,12 @@ class Database(object):
 
 ###################################################################################################
 
-def get_database():
+def get_database(db_name, uri=""):
+    global URI
+    global DB_NAME
+
+    URI = uri
+    DB_NAME = db_name
     if Database._instance is None:
         Database()
     return Database._instance

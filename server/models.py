@@ -8,16 +8,19 @@ class User(BaseModel):
     email: str = Field(..., description="Email address of the user")
     password: str = Field(..., description="Password of the user")
 
+
 class OrderUser(BaseModel):
     id: int = Field(alias='_id', description="Unique identifier for the user in an order")
     username: str = Field(..., description="Username of the user in an order")
     email: str = Field(..., description="Email address of the user in an order")
+
 
 class Product(BaseModel):
     id: int = Field(alias='_id', description="Unique identifier for the product")
     title: str = Field(..., description="Title of the product")
     product_type: str = Field(..., description="Type of the product")
     price: float = Field(..., description="Price of the product")
+    quantity: int = Field(..., description="The amount of product in the warehouse.")
     interest: List[str] = Field(..., description="List of interests associated with the product")
     license: List[str] = Field(..., description="List of licenses for the product")
     tags: List[str] = Field(..., description="Tags associated with the product")
@@ -27,6 +30,7 @@ class Product(BaseModel):
     related: List[int] = Field(..., description="List of related product IDs")
     description: str = Field(..., description="Description of the product")
     img: str = Field(..., description="Image URL of the product")
+
 
 class Order(BaseModel):
     id: int = Field(alias='_id', description="Unique identifier for the order")

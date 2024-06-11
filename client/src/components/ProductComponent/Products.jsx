@@ -255,7 +255,6 @@ export const Products = () => {
           <div className="category-bar">
             <label>Categories</label>
             <div className="category-buttons">
-              {/*TODO : METTERE I FILTRI PER : Disney, Sports, Marvel, Anime, Star Wars, Music, Video Games, Pixar, Harry Potter, Pokémon */}
               <button
                 className="btn btn-outline-dark me-2"
                 onClick={() => filterProducts("All")}

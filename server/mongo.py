@@ -6,82 +6,68 @@ import pymongo
 
 # Own Models
 from utils.logger import get_logger
-from utils.database import get_database, URI, DB_NAME
+from utils.database import get_database
 
 from server.models import *
 from server.mongo import *
 from utils.utils import *
+import math
 
-LOG_SYS = get_logger()
 DATABASE = None
+LOG_SYS = get_logger()
 TAG = "MongoDB"
 
-async def connect(host="localhost", port=27017, db_name="", username=None, password=None):
-    
-    # Global access to Database congifuration params
-    global URI
-    global DB_NAME
+
+def connect(host="localhost", port=27017, db_name="", username=None, password=None):
     global DATABASE
     
-    # Setup database URI
     if username is None or password is None:
         URI = f"mongodb://{host}:{port}/{db_name}"
     else:
         URI = f"mongodb://{username}:{password}@{host}:{port}/{db_name}"
-
-    # Setup database name
-    DB_NAME = db_name
-
     # Get database instance and populate if necessary
     try:
         LOG_SYS.write(TAG, "Connection to MongoDB.")
-        DATABASE = get_database()
-        
+        DATABASE = get_database(db_name, URI)
         LOG_SYS.write(TAG, "Population of the database.")
-        await populate_database()
+        populate_database()
     except Exception as e:
-        LOG_SYS.write(TAG, "Error connecting to MongoDB: ", e)
+        LOG_SYS.write(TAG, f"Error connecting to MongoDB: {e}")
 
-async def populate_database():
+
+def populate_database():
     try:
         dataset_path = '../source/json/'
         users_dataset_path = dataset_path + 'users.json'
         orders_dataset_path = dataset_path + 'orders.json'
         products_dataset_path = dataset_path + 'products.json'
     
-        products_dataset = read_json(products_dataset_path)
-        users_dataset = read_json(users_dataset_path)
-        orders_dataset = read_json(orders_dataset_path)
+        users_dataset = list(read_json(users_dataset_path).values())
+        orders_dataset = list(read_json(orders_dataset_path).values())
+        products_dataset = list(read_json(products_dataset_path).values())
 
         users = DATABASE["Users"]
-
-        # Check if the Users collection is already populated
-        count = await users.count_documents({})
+        count = users.count_documents({})
         if count > 0:
             LOG_SYS.write(TAG, "A collection for users already exists.")
         else:
-            result = await users.insert_many(users_dataset)
+            result = users.insert_many(users_dataset)
             LOG_SYS.write(TAG, f"Filled the users collection with {len(result.inserted_ids)} documents.")
-        
+
         orders = DATABASE["Orders"]
-        
-        # Check if the Orders collection is already populated
-        count = await orders.count_documents({})
+        count = orders.count_documents({})
         if count > 0:
             LOG_SYS.write(TAG, "A collection for orders already exists.")
         else:
-            result = await orders.insert_many(orders_dataset)
+            result = orders.insert_many(orders_dataset)
             LOG_SYS.write(TAG, f"Filled the orders collection with {len(result.inserted_ids)} documents.")
         
         products = DATABASE["Products"]
-
-        # Check if the Products collection is already populated
-        count = await products.count_documents({})
+        count = products.count_documents({})
         if count > 0:
             LOG_SYS.write(TAG, "A collection for products already exists.")
         else:
-            data = list(products_dataset.values())
-            result = await products.insert_many(data)
+            result = products.insert_many(products_dataset)
             LOG_SYS.write(TAG, f"Filled the funko pops collection with {len(result.inserted_ids)} documents.")
         
     except pymongo.errors.PyMongoError as e:
@@ -93,9 +79,7 @@ async def populate_database():
 
 async def get_user(username: str, email: str = None) -> User:
     try:
-        # Collection Users
         collection = DATABASE["Users"]
-        
         # Execute the query to find the user in the collection by username or password
         LOG_SYS.write(TAG, f"Query to get user information by username: {username} or email: {email} executing.")
         query = {"username": username}
@@ -117,7 +101,6 @@ async def get_user(username: str, email: str = None) -> User:
         # Other unexpected events occurred
         LOG_SYS.write(TAG, f"Query to get user information by username: {username} or email: {email} failed with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to getting user data.")
-
 
 async def insert_user(user_data: User) -> str:
     try:
@@ -339,6 +322,32 @@ async def get_all_products() -> List[Product]:
         LOG_SYS.write(TAG, f"Query to get all products failed with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to get products.")
 
+
+async def get_products_from_page(pageIndex: int):
+    try:
+        products = DATABASE["Products"]
+        count = products.count_documents({})
+        max_pages = math.ceil(count / 20.0)
+        if pageIndex < 0 or pageIndex > max_pages - 1:
+            raise ValueError("Invalid pages range specified.")
+        
+        LOG_SYS.write(TAG, "Query to get products pages executing.")
+        start_range = pageIndex * 20
+        end_range = min((pageIndex + 1) * 20, count)
+        product_data = list(products.find().skip(start_range).limit(end_range))
+        if not product_data:
+            LOG_SYS.write(TAG, "No Products found.")
+            return []
+        
+        # Build a list of instances of Product using the data retrieved from the database
+        products = [Product(**product) for product in product_data]
+        LOG_SYS.write(TAG, f"Found {len(products)} products.")
+        return products
+    
+    except Exception as e:
+        # Other unexpected events occurred
+        LOG_SYS.write(TAG, f"Query to get all products failed with error: {e}.")
+        raise HTTPException(status_code=500, detail="Failed to get products.")
 
 async def get_product(product_id) -> Product:
     try:
