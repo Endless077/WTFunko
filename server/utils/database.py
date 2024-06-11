@@ -4,8 +4,8 @@ from pymongo import MongoClient
 # Example of MongoDB URI "mongodb://username:password@mongodb.example.com:27017"
 #URI = "mongodb://username:password@mongodb.example.com:27017"
 
-URI = ""
-DB_NAME = ""
+URI = "mongodb://localhost:27017"
+DB_NAME = "test"
 
 class Database(object):
     _instance = None
@@ -19,7 +19,7 @@ class Database(object):
 
 ###################################################################################################
 
-def get_database(db_name, uri=""):
+def get_database(uri="mongodb://localhost:27017", db_name="test"):
     global URI
     global DB_NAME
 

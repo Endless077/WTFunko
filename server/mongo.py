@@ -13,22 +13,23 @@ from server.mongo import *
 from utils.utils import *
 import math
 
-DATABASE = None
 LOG_SYS = get_logger()
+DATABASE = None
+
 TAG = "MongoDB"
 
+###################################################################################################
 
-def connect(host="localhost", port=27017, db_name="", username=None, password=None):
+def connect(host="localhost", port=27017, db_name=None, username=None, password=None):
     global DATABASE
     
     if username is None or password is None:
         URI = f"mongodb://{host}:{port}/{db_name}"
     else:
         URI = f"mongodb://{username}:{password}@{host}:{port}/{db_name}"
-    # Get database instance and populate if necessary
     try:
         LOG_SYS.write(TAG, "Connection to MongoDB.")
-        DATABASE = get_database(db_name, URI)
+        DATABASE = get_database(URI, db_name)
         LOG_SYS.write(TAG, "Population of the database.")
         populate_database()
     except Exception as e:
@@ -101,6 +102,7 @@ async def get_user(username: str, email: str = None) -> User:
         # Other unexpected events occurred
         LOG_SYS.write(TAG, f"Query to get user information by username: {username} or email: {email} failed with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to getting user data.")
+
 
 async def insert_user(user_data: User) -> str:
     try:
@@ -227,6 +229,7 @@ async def get_order_info(order_id: str) -> Order:
         LOG_SYS.write(TAG, f"Query to get order info for uid: {order_id} failed with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to get order info.")
 
+
 async def insert_order(order_data: Order) -> str:
     try:
         # Collection Orders
@@ -252,6 +255,7 @@ async def insert_order(order_data: Order) -> str:
         LOG_SYS.write(TAG, f"Failed to insert order data with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to insert order data.")
 
+
 async def delete_order(order_id: str) -> str:
     try:
         # Collection Orders
@@ -274,6 +278,7 @@ async def delete_order(order_id: str) -> str:
         # Other unexpected events occurred
         LOG_SYS.write(TAG, f"Failed to delete order data with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to delete order data.")
+
 
 async def update_order(order_data: Order) -> str:
     try:
@@ -323,14 +328,18 @@ async def get_all_products() -> List[Product]:
         raise HTTPException(status_code=500, detail="Failed to get products.")
 
 
-async def get_products_from_page(pageIndex: int):
+async def get_products_from_page(pageIndex: int) -> List[Product]:
     try:
+        # Collection Products
         products = DATABASE["Products"]
+        
+        # Setup max page and range index
         count = products.count_documents({})
         max_pages = math.ceil(count / 20.0)
         if pageIndex < 0 or pageIndex > max_pages - 1:
             raise ValueError("Invalid pages range specified.")
         
+        # Query to find Products info in the collection by pageIndex
         LOG_SYS.write(TAG, "Query to get products pages executing.")
         start_range = pageIndex * 20
         end_range = min((pageIndex + 1) * 20, count)
