@@ -17,10 +17,10 @@ export const Products = () => {
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/getAllProducts");
+      const response = await fetch("https://dummyjson.com/products");
       const result = await response.json();
-      setData(result);
-      setFilter(result);
+      setData(result.products);
+      setFilter(result.products);
       setLoading(false);
     };
 
@@ -38,7 +38,7 @@ export const Products = () => {
   const addToCart = (product) => {
     let updatedCart;
     const existingProductIndex = cart.findIndex(
-      (item) => item.id === product._id
+      (item) => item.id === product.id
     );
     if (existingProductIndex !== -1) {
       updatedCart = [...cart];
@@ -121,8 +121,17 @@ export const Products = () => {
     return <>Loading...</>;
   };
 
+  const handleQuantityChange = (productId, quantity) => {
+    const updatedCart = cart.map((item) =>
+      item.id === productId ? { ...item, quantity } : item
+    );
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
   const ShowProducts = () => {
     const paginatedProducts = paginate(filter, currentPage, productsPerPage);
+
     return (
       <>
         {paginatedProducts.length === 0 ? (
@@ -130,14 +139,14 @@ export const Products = () => {
         ) : (
           <div className="row">
             {paginatedProducts.map((product) => (
-              <div key={product._id} className="col-md-3 mb-4">
+              <div key={product.id} className="col-md-3 mb-4">
                 <div
                   className="card h-100 text-center p-4"
                   style={{ width: "18rem" }}
                 >
-                  <Link to={`/productInfo/${product._id}`}>
+                  <Link to={`/productInfo/${product.id}`}>
                     <img
-                      src={product.img}
+                      src={product.thumbnail}
                       className="card-img-top"
                       alt={product.title}
                       height="250"
@@ -148,7 +157,7 @@ export const Products = () => {
                       {product.title.substring(0, 12)}
                     </h5>
                     <p className="card-text lead fw-bold">${product.price}</p>
-                    {cart.some((item) => item.id === product._id) ? (
+                    {cart.some((item) => item.id === product.id) ? (
                       <div>
                         <button
                           className="btn btn-dark btn-block mb-2"
@@ -159,11 +168,10 @@ export const Products = () => {
                         <select
                           className="form-select mb-2"
                           value={
-                            cart.find((item) => item.id === product._id)
-                              .quantity
+                            cart.find((item) => item.id === product.id).quantity
                           }
                           onChange={(e) =>
-                            handleQuantityChange(product._id, +e.target.value)
+                            handleQuantityChange(product.id, +e.target.value)
                           }
                         >
                           {[...Array(10).keys()].map((number) => (
@@ -263,7 +271,7 @@ export const Products = () => {
               </button>
               <button
                 className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("smartphones")}
+                onClick={() => filterProducts("Disney")}
               >
                 Disney
               </button>
@@ -293,18 +301,6 @@ export const Products = () => {
               </button>
               <button
                 className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Music")}
-              >
-                Music
-              </button>
-              <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Video Games")}
-              >
-                Video Games
-              </button>
-              <button
-                className="btn btn-outline-dark me-2"
                 onClick={() => filterProducts("Pixar")}
               >
                 Pixar
@@ -320,6 +316,18 @@ export const Products = () => {
                 onClick={() => filterProducts("Pokémon")}
               >
                 Pokémon
+              </button>
+                       <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Music")}
+              >
+                Music
+              </button>
+              <button
+                className="btn btn-outline-dark me-2"
+                onClick={() => filterProducts("Video Games")}
+              >
+                Video Games
               </button>
             </div>
           </div>

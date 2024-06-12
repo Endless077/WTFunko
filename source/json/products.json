@@ -6665,6 +6665,7 @@
     "title": "Boo Berry Watch - General Mills",
     "product_type": "Pop! Watch",
     "price": 17.5,
+    "quantity": 100,
     "interest": ["Ad Icons"],
     "license": ["General Mills"],
     "tags": [
@@ -9400,6 +9401,7 @@
     "title": "Count Chocula Watch - General Mills",
     "product_type": "Pop! Watch",
     "price": 17.5,
+    "quantity": 100,
     "interest": ["Ad Icons"],
     "license": ["General Mills"],
     "tags": [
@@ -14798,6 +14800,7 @@
     "title": "Franken Berry Watch - General Mills",
     "product_type": "Pop! Watch",
     "price": 17.5,
+    "quantity": 100,
     "interest": ["Ad Icons"],
     "license": ["General Mills"],
     "tags": [
@@ -15366,6 +15369,7 @@
     "title": "Funko Logo",
     "product_type": "Stickers",
     "price": 2.5,
+    "quantity": 100,
     "interest": ["Brand Shop"],
     "license": ["Funko"],
     "tags": ["JUN15", "Republish", "Shop All"],

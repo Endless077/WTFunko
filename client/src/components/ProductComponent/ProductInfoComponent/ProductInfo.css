@@ -13,8 +13,3 @@
   max-width: 100%;
   height: auto;
 }
-
-.card-img-top {
-  object-fit: scale-down;
-  width: 100%;
-}

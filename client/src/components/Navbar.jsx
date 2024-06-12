@@ -18,9 +18,9 @@ export const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("cart");
-    setUsername("");
     setIsLoggedIn(false);
-    window.location.reload();
+    setUsername("");
+    navigate("/");
   };
 
   return (

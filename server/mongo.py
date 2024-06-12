@@ -8,8 +8,8 @@ import pymongo
 from utils.logger import get_logger
 from utils.database import get_database
 
-from server.models import *
-from server.mongo import *
+from models import *
+from mongo import *
 from utils.utils import *
 import math
 
@@ -316,7 +316,7 @@ async def get_all_products() -> List[Product]:
         if not product_data:
             LOG_SYS.write(TAG, "No Products found.")
             return []
-        
+
         # Build a list of instances of Product using the data retrieved from the database
         products = [Product(**product) for product in product_data]
         LOG_SYS.write(TAG, f"Found {len(products)} products.")

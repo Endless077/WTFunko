@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Navbar } from "../../Navbar";
 import "./ProductInfo.css";
 
+//TODO : When switching to real backend, change product.thumbnail into product.image
 const ProductInfo = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -11,7 +12,7 @@ const ProductInfo = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/getProduct/${id}`);
+        const response = await fetch(`https://dummyjson.com/products/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -45,6 +46,14 @@ const ProductInfo = () => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
+  const handleQuantityChange = (productId, quantity) => {
+    const updatedCart = cart.map((item) =>
+      item.id === productId ? { ...item, quantity } : item
+    );
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
   if (!product) {
     return <div>Loading...</div>;
   }
@@ -57,7 +66,7 @@ const ProductInfo = () => {
           <div className="col-md-6">
             <div className="card h-100 text-center p-4">
               <img
-                src={product.img}
+                src={product.thumbnail}
                 className="card-img-top"
                 alt={product.title}
                 height={400}
@@ -65,19 +74,41 @@ const ProductInfo = () => {
             </div>
           </div>
           <div className="col-md-6 d-flex flex-column justify-content-center">
-            <h2>{product.interest[0]}</h2>
-            <h3>{product.product_type}</h3>
             {/*TODO : AGGIUNGERE L' h2 CON L'INTEREST DEL PRODOTTO (LISTA)*/}
             {/*TODO : AGGIUNGERE L' h3 CON IL PRODUCT TYPE DEL PRODOTTO (LISTA)*/}
             <h1 className="display-5">{product.title}</h1>
             <p className="lead">{product.description}</p>
             <h3 className="my-4">${product.price}</h3>
-            <button
-              className="btn btn-outline-dark"
-              onClick={() => addToCart(product)}
-            >
-              Add to Cart
-            </button>
+            {cart.some((item) => item.id === product.id) ? (
+              <div>
+                <button
+                  className="btn btn-dark btn-block mb-2"
+                  onClick={() => addToCart(product, 1)}
+                >
+                  In Cart
+                </button>
+                <select
+                  className="form-select mb-2"
+                  value={cart.find((item) => item.id === product.id).quantity}
+                  onChange={(e) =>
+                    handleQuantityChange(product.id, +e.target.value)
+                  }
+                >
+                  {[...Array(10).keys()].map((number) => (
+                    <option key={number + 1} value={number + 1}>
+                      {number + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <button
+                className="btn btn-outline-dark btn-block mb-2"
+                onClick={() => addToCart(product, 1)}
+              >
+                Add to Cart
+              </button>
+            )}
           </div>
         </div>
         {/*TODO : AGGIUNGERE LA PARTE IN CUI FA VEDERE LE IMMAGINI DEI FUNKO RELATED (ID)*/}
