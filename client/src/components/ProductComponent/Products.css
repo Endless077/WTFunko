@@ -60,7 +60,6 @@
   border: 1px solid #ccc;
 }
 
-/* Styling for the category buttons */
 .category-bar {
   display: flex;
   flex-direction: column;
@@ -116,4 +115,11 @@
 
 .pagination .page-arrow:hover {
   color: #0056b3;
+}
+
+.category-buttons .btn.active,
+.category-buttons .btn:hover {
+  background-color: #343a40;
+  color: #fff;
+  border-color: #343a40;
 }

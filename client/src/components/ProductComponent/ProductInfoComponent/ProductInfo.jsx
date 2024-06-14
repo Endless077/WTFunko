@@ -12,7 +12,7 @@ const ProductInfo = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://dummyjson.com/products/${id}`);
+        const response = await fetch(`http://localhost:8000/getProduct/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -66,7 +66,7 @@ const ProductInfo = () => {
           <div className="col-md-6">
             <div className="card h-100 text-center p-4">
               <img
-                src={product.thumbnail}
+                src={product.img}
                 className="card-img-top"
                 alt={product.title}
                 height={400}

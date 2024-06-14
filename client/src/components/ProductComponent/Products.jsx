@@ -13,14 +13,15 @@ export const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(20);
   const [sortCriteria, setSortCriteria] = useState("default");
+  const [activeCategory, setActiveCategory] = useState("All");
 
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const response = await fetch("https://dummyjson.com/products");
+      const response = await fetch("http://localhost:8000/getAllProducts");
       const result = await response.json();
-      setData(result.products);
-      setFilter(result.products);
+      setData(result);
+      setFilter(result);
       setLoading(false);
     };
 
@@ -38,7 +39,7 @@ export const Products = () => {
   const addToCart = (product) => {
     let updatedCart;
     const existingProductIndex = cart.findIndex(
-      (item) => item.id === product.id
+      (item) => item._id === product._id
     );
     if (existingProductIndex !== -1) {
       updatedCart = [...cart];
@@ -51,12 +52,13 @@ export const Products = () => {
   };
 
   const filterProducts = (cat) => {
+    setActiveCategory(cat);
     if (cat === "All") {
       setSearchTerm("");
       setFilter(data);
     } else {
       if (searchTerm.trim() === "") {
-        const updatedList = data.filter((x) => x.category === cat);
+        const updatedList = data.filter((x) => x.interest[0] === cat);
         setFilter(updatedList);
       } else {
         filterProductsByName(searchTerm);
@@ -123,11 +125,12 @@ export const Products = () => {
 
   const handleQuantityChange = (productId, quantity) => {
     const updatedCart = cart.map((item) =>
-      item.id === productId ? { ...item, quantity } : item
+      item._id === productId ? { ...item, quantity } : item
     );
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
+
 
   const ShowProducts = () => {
     const paginatedProducts = paginate(filter, currentPage, productsPerPage);
@@ -139,14 +142,14 @@ export const Products = () => {
         ) : (
           <div className="row">
             {paginatedProducts.map((product) => (
-              <div key={product.id} className="col-md-3 mb-4">
+              <div key={product._id} className="col-md-3 mb-4">
                 <div
                   className="card h-100 text-center p-4"
                   style={{ width: "18rem" }}
                 >
-                  <Link to={`/productInfo/${product.id}`}>
+                  <Link to={`/productInfo/${product._id}`}>
                     <img
-                      src={product.thumbnail}
+                      src={product.img}
                       className="card-img-top"
                       alt={product.title}
                       height="250"
@@ -154,10 +157,10 @@ export const Products = () => {
                   </Link>
                   <div className="card-body">
                     <h5 className="card-title mb-0">
-                      {product.title.substring(0, 12)}
+                      {product.title}
                     </h5>
                     <p className="card-text lead fw-bold">${product.price}</p>
-                    {cart.some((item) => item.id === product.id) ? (
+                    {cart.some((item) => item._id === product._id) ? (
                       <div>
                         <button
                           className="btn btn-dark btn-block mb-2"
@@ -168,10 +171,10 @@ export const Products = () => {
                         <select
                           className="form-select mb-2"
                           value={
-                            cart.find((item) => item.id === product.id).quantity
+                            cart.find((item) => item._id === product._id).quantity
                           }
                           onChange={(e) =>
-                            handleQuantityChange(product.id, +e.target.value)
+                            handleQuantityChange(product._id, +e.target.value)
                           }
                         >
                           {[...Array(10).keys()].map((number) => (
@@ -264,94 +267,92 @@ export const Products = () => {
             <label>Categories</label>
             <div className="category-buttons">
               <button
-                className="btn btn-outline-dark me-2"
+                className={`btn btn-outline-dark me-2 ${activeCategory === "All" ? "active" : ""}`}
                 onClick={() => filterProducts("All")}
               >
                 All
               </button>
               <button
-                className="btn btn-outline-dark me-2"
+                className={`btn btn-outline-dark me-2 ${activeCategory === "Disney" ? "active" : ""}`}
                 onClick={() => filterProducts("Disney")}
               >
                 Disney
               </button>
               <button
-                className="btn btn-outline-dark me-2"
+                className={`btn btn-outline-dark me-2 ${activeCategory === "Sports" ? "active" : ""}`}
                 onClick={() => filterProducts("Sports")}
               >
                 Sports
               </button>
               <button
-                className="btn btn-outline-dark me-2"
+                className={`btn btn-outline-dark me-2 ${activeCategory === "Marvel" ? "active" : ""}`}
                 onClick={() => filterProducts("Marvel")}
               >
                 Marvel
               </button>
               <button
-                className="btn btn-outline-dark me-2"
+                className={`btn btn-outline-dark me-2 ${activeCategory === "Anime" ? "active" : ""}`}
                 onClick={() => filterProducts("Anime")}
               >
                 Anime
               </button>
               <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Star Wars")}
-              >
-                Star Wars
-              </button>
-              <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Pixar")}
-              >
-                Pixar
-              </button>
-              <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Harry Potter")}
-              >
-                Harry Potter
-              </button>
-              <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Pokémon")}
-              >
-                Pokémon
-              </button>
-                       <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Music")}
-              >
-                Music
-              </button>
-              <button
-                className="btn btn-outline-dark me-2"
-                onClick={() => filterProducts("Video Games")}
-              >
-                Video Games
-              </button>
+                className={`btn btn-outline-dark me-2 ${activeCategory === "Star Wars" ? "active": ""}`}
+                  onClick={() => filterProducts("Star Wars")}
+                >
+                  Star Wars
+                </button>
+                <button
+                  className={`btn btn-outline-dark me-2 ${activeCategory === "Pixar" ? "active" : ""}`}
+                  onClick={() => filterProducts("Pixar")}
+                >
+                  Pixar
+                </button>
+                <button
+                  className={`btn btn-outline-dark me-2 ${activeCategory === "Harry Potter" ? "active" : ""}`}
+                  onClick={() => filterProducts("Harry Potter")}
+                >
+                  Harry Potter
+                </button>
+                <button
+                  className={`btn btn-outline-dark me-2 ${activeCategory === "Pokémon" ? "active" : ""}`}
+                  onClick={() => filterProducts("Pokémon")}
+                >
+                  Pokémon
+                </button>
+                <button
+                  className={`btn btn-outline-dark me-2 ${activeCategory === "Music" ? "active" : ""}`}
+                  onClick={() => filterProducts("Music")}
+                >
+                  Music
+                </button>
+                <button
+                  className={`btn btn-outline-dark me-2 ${activeCategory === "Video Games" ? "active" : ""}`}
+                  onClick={() => filterProducts("Video Games")}
+                >
+                  Video Games
+                </button>
+              </div>
+              <div className="sort-options">
+                <label>Sort by:</label>
+                <select
+                  className="form-select"
+                  value={sortCriteria}
+                  onChange={handleSortChange}
+                >
+                  <option value="default">Default</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="name-asc">Name: A to Z</option>
+                  <option value="name-desc">Name: Z to A</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div className="sort-bar">
-            <label>Sort By</label>
-            <select
-              className="form-select"
-              value={sortCriteria}
-              onChange={handleSortChange}
-            >
-              <option value="default">Default</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="name-asc">Name: A to Z</option>
-              <option value="name-desc">Name: Z to A</option>
-            </select>
-          </div>
-        </div>
-        <div className="row justify-content-center">
           {loading ? <Loading /> : <ShowProducts />}
         </div>
       </div>
-    </div>
-  );
-};
-
-export default Products;
+    );
+  };
+  
+  export default Products;

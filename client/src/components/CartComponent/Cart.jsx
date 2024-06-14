@@ -25,7 +25,7 @@ const CartPage = () => {
     newQuantity = Math.max(newQuantity, 1);
 
     const updatedCart = cart.map((item) => {
-      if (item.id === productId) {
+      if (item._id === productId) {
         return { ...item, quantity: newQuantity };
       }
       return item;
@@ -36,7 +36,7 @@ const CartPage = () => {
   };
 
   const removeFromCart = (productId) => {
-    const updatedCart = cart.filter((item) => item.id !== productId);
+    const updatedCart = cart.filter((item) => item._id !== productId);
 
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
@@ -100,12 +100,12 @@ const CartPage = () => {
               </thead>
               <tbody>
                 {cart.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item._id}>
                     <td>
                       <div className="d-flex align-items-center">
-                        <Link to={`/productInfo/${item.id}`}>
+                        <Link to={`/productInfo/${item._id}`}>
                           <img
-                            src={item.thumbnail}
+                            src={item.img}
                             alt={item.name}
                             style={{ marginRight: "10px", width: "50px" }}
                           />
@@ -119,7 +119,7 @@ const CartPage = () => {
                         <button
                           className="btn btn-sm btn-primary me-2"
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            updateQuantity(item._id, item.quantity - 1)
                           }
                         >
                           -
@@ -128,7 +128,7 @@ const CartPage = () => {
                         <button
                           className="btn btn-sm btn-primary ms-2"
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
+                            updateQuantity(item._id, item.quantity + 1)
                           }
                         >
                           +
@@ -139,7 +139,7 @@ const CartPage = () => {
                     <td>
                       <button
                         className="btn btn-danger"
-                        onClick={() => handleShowModal(item.id)}
+                        onClick={() => handleShowModal(item._id)}
                       >
                         Remove
                       </button>

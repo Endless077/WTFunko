@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Navbar";
-import "./Register.css"; // Assuming you have a CSS file for styling
+import "./Register.css";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -10,12 +10,12 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const navigate = useNavigate(); // Use useNavigate instead of useHistory
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+    
     try {
       const response = await axios.get(
         "https://jsonplaceholder.typicode.com/users"

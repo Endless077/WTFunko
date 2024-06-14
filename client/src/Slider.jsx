@@ -28,37 +28,29 @@ const Slider = () => {
       </div>
       <div id="slider">
         <figure className="f_slider">
-          <a href="ProdottoList?franchise=Marvel">
             <img
               src="/assets/slider/Marvel_Logo.png"
               className="hover-gif"
               data-hover="/assets/slider/Marvel_Gif.gif"
             />
-          </a>
-          <a href="ProdottoList?franchise=Disney">
             <img
               src="/assets/slider/Disney_Logo.png"
               alt="Disney"
               className="hover-gif"
               data-hover="/assets/slider/Disney_Gif.gif"
             />
-          </a>
-          <a href="ProdottoList?franchise=Pixar">
             <img
               src="/assets/slider/Pixar_Logo.jpg"
               alt="Pixar"
               className="hover-gif"
               data-hover="/assets/slider/Pixar_Gif.gif"
             />
-          </a>
-          <a href="ProdottoList?franchise=Pokemon">
             <img
               src="/assets/slider/Pokemon_Logo.png"
               alt="Pokemon"
               className="hover-gif"
               data-hover="/assets/slider/Pokemon_Gif.gif"
             />
-          </a>
         </figure>
       </div>
     </div>

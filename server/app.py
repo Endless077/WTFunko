@@ -1,5 +1,6 @@
 # FastAPI
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 import uvicorn
 
 # Security & Middleware
@@ -23,9 +24,9 @@ from mongo import *
 LOG_SYS = get_logger()
 TAG = "FastAPI"
 
-app = FastAPI(title="FastAPI - ML Test Suite",
-              description="A simple and fast api suite for a test suite for machine learning models.",
-              summary="Some easy API for a ML Test Suite.",
+app = FastAPI(title="FastAPI - WTFunko",
+              description="A simple and fast api suite for WTFunko e-commerce.",
+              summary="Some easy API for WTFunko Store.",
               contact={
                 "email": "antonio.garofalo125@gmail.com",
                 "name": "Antonio Garofalo",
