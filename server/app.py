@@ -241,9 +241,23 @@ async def getAllProducts():
 @app.get("/getProductsFromPage/{pageIndex}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a page.")
 async def getProductsFromPage(pageIndex: int):
     try:
-        LOG_SYS.write(TAG, f"Getting all product from Database.")
+        LOG_SYS.write(TAG, f"Getting products from page...")
         products = await get_products_from_page(pageIndex)
         return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of products.")
+async def getUniqueProductsCount():
+    try:
+        LOG_SYS.write(TAG, f"Getting all product from Database.")
+        count = await get_unique_products_count()
+        return count
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
         raise e
@@ -379,6 +393,7 @@ def welcome_message():
     LOG_SYS.write(TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
     LOG_SYS.write(TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
 
+
 def shutdown():
     try:
         LOG_SYS.write(TAG, "Closing Database MongDB connection.")
@@ -388,7 +403,9 @@ def shutdown():
     except Exception as e:  
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
 
+
 if __name__ == '__main__':
     welcome_message()
     connect(host="localhost", port=27017, db_name="WTFunko")
+    #uvicorn.run(app, host="127.0.0.1", port=8000)
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -1,32 +1,57 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import React from "react";
 import "./Products.css";
 
 export const Products = () => {
+  const uniqueProductsCountKey = "Unique Products Count Result";
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryParams = new URLSearchParams(location.search);
+  const currentPage = parseInt(queryParams.get("page")) || 0;
+
   const [data, setData] = useState([]);
-  const [filter, setFilter] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(20);
   const [sortCriteria, setSortCriteria] = useState("default");
   const [activeCategory, setActiveCategory] = useState("All");
 
+  // Gets the amount of unique products.
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/getAllProducts");
-      const result = await response.json();
-      setData(result);
-      setFilter(result);
+      const uniqueProductsCountFetch = await fetch(
+        "http://localhost:8000/getUniqueProductsCount"
+      );
+      const uniqueProductsCountResult = await uniqueProductsCountFetch.json();
+      localStorage.setItem(uniqueProductsCountKey, uniqueProductsCountResult);
       setLoading(false);
     };
-
     getProducts();
-  }, []);
+  }, [currentPage]);
+
+  // Fetch the products from the current page.
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const pageProductsFetch = await fetch(
+          `http://localhost:8000/getProductsFromPage/${currentPage}`
+        );
+        const pageProductsResult = await pageProductsFetch.json();
+        setData(pageProductsResult);
+      } catch (error) {
+        console.error("Error fetching page products:", error);
+      }
+    };
+
+    if (currentPage !== null) {
+      fetchProducts();
+    }
+  }, [currentPage]);
 
   useEffect(() => {
     const fetchCart = () => {
@@ -55,11 +80,9 @@ export const Products = () => {
     setActiveCategory(cat);
     if (cat === "All") {
       setSearchTerm("");
-      setFilter(data);
     } else {
       if (searchTerm.trim() === "") {
         const updatedList = data.filter((x) => x.interest[0] === cat);
-        setFilter(updatedList);
       } else {
         filterProductsByName(searchTerm);
       }
@@ -79,7 +102,6 @@ export const Products = () => {
     const filteredProducts = data.filter((product) =>
       product.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilter(filteredProducts);
   };
 
   const sortProducts = (criteria) => {
@@ -101,7 +123,6 @@ export const Products = () => {
         sortedProducts = data;
         break;
     }
-    setFilter(sortedProducts);
   };
 
   const handleSortChange = (e) => {
@@ -109,14 +130,8 @@ export const Products = () => {
     sortProducts(e.target.value);
   };
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const paginate = (products, pageNumber, productsPerPage) => {
-    const startIndex = (pageNumber - 1) * productsPerPage;
-    const endIndex = startIndex + productsPerPage;
-    return products.slice(startIndex, endIndex);
+  const handlePageChange = async (pageIndex) => {
+    navigate(`?page=${pageIndex}`);
   };
 
   const Loading = () => {
@@ -131,17 +146,21 @@ export const Products = () => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
-
   const ShowProducts = () => {
-    const paginatedProducts = paginate(filter, currentPage, productsPerPage);
-
+    const uniqueProductsCountResult = localStorage.getItem(
+      uniqueProductsCountKey
+    );
+    const totalPages = Math.ceil(uniqueProductsCountResult / productsPerPage);
+    const maxPageDisplay = 10;
+    const startPage = Math.floor(currentPage / maxPageDisplay) * maxPageDisplay;
+    const endPage = Math.min(startPage + maxPageDisplay, totalPages);
     return (
       <>
-        {paginatedProducts.length === 0 ? (
+        {data.length === 0 ? (
           <p>No products available</p>
         ) : (
           <div className="row">
-            {paginatedProducts.map((product) => (
+            {data.map((product) => (
               <div key={product._id} className="col-md-3 mb-4">
                 <div
                   className="card h-100 text-center p-4"
@@ -156,9 +175,7 @@ export const Products = () => {
                     />
                   </Link>
                   <div className="card-body">
-                    <h5 className="card-title mb-0">
-                      {product.title}
-                    </h5>
+                    <h5 className="card-title mb-0">{product.title}</h5>
                     <p className="card-text lead fw-bold">${product.price}</p>
                     {cart.some((item) => item._id === product._id) ? (
                       <div>
@@ -171,7 +188,8 @@ export const Products = () => {
                         <select
                           className="form-select mb-2"
                           value={
-                            cart.find((item) => item._id === product._id).quantity
+                            cart.find((item) => item._id === product._id)
+                              .quantity
                           }
                           onChange={(e) =>
                             handleQuantityChange(product._id, +e.target.value)
@@ -199,31 +217,29 @@ export const Products = () => {
           </div>
         )}
         <div className="pagination">
-          {currentPage > 1 && (
+          {startPage > 0 && (
             <span
               className="page-arrow"
-              onClick={() => handlePageChange(currentPage - 1)}
+              onClick={() => handlePageChange(startPage - 1)}
             >
               &laquo;
             </span>
           )}
-          {[...Array(Math.ceil(filter.length / productsPerPage)).keys()].map(
-            (number) => (
-              <button
-                key={number + 1}
-                onClick={() => handlePageChange(number + 1)}
-                className={`page-item ${
-                  currentPage === number + 1 ? "active" : ""
-                }`}
-              >
-                {number + 1}
-              </button>
-            )
-          )}
-          {currentPage < Math.ceil(filter.length / productsPerPage) && (
+          {[...Array(endPage - startPage).keys()].map((number) => (
+            <button
+              key={startPage + number}
+              onClick={() => handlePageChange(startPage + number)}
+              className={`page-item ${
+                currentPage === startPage + number ? "active" : ""
+              }`}
+            >
+              {startPage + number + 1}
+            </button>
+          ))}
+          {endPage < totalPages && (
             <span
               className="page-arrow"
-              onClick={() => handlePageChange(currentPage + 1)}
+              onClick={() => handlePageChange(endPage)}
             >
               &raquo;
             </span>
@@ -267,92 +283,112 @@ export const Products = () => {
             <label>Categories</label>
             <div className="category-buttons">
               <button
-                className={`btn btn-outline-dark me-2 ${activeCategory === "All" ? "active" : ""}`}
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "All" ? "active" : ""
+                }`}
                 onClick={() => filterProducts("All")}
               >
                 All
               </button>
               <button
-                className={`btn btn-outline-dark me-2 ${activeCategory === "Disney" ? "active" : ""}`}
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Disney" ? "active" : ""
+                }`}
                 onClick={() => filterProducts("Disney")}
               >
                 Disney
               </button>
               <button
-                className={`btn btn-outline-dark me-2 ${activeCategory === "Sports" ? "active" : ""}`}
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Sports" ? "active" : ""
+                }`}
                 onClick={() => filterProducts("Sports")}
               >
                 Sports
               </button>
               <button
-                className={`btn btn-outline-dark me-2 ${activeCategory === "Marvel" ? "active" : ""}`}
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Marvel" ? "active" : ""
+                }`}
                 onClick={() => filterProducts("Marvel")}
               >
                 Marvel
               </button>
               <button
-                className={`btn btn-outline-dark me-2 ${activeCategory === "Anime" ? "active" : ""}`}
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Anime" ? "active" : ""
+                }`}
                 onClick={() => filterProducts("Anime")}
               >
                 Anime
               </button>
               <button
-                className={`btn btn-outline-dark me-2 ${activeCategory === "Star Wars" ? "active": ""}`}
-                  onClick={() => filterProducts("Star Wars")}
-                >
-                  Star Wars
-                </button>
-                <button
-                  className={`btn btn-outline-dark me-2 ${activeCategory === "Pixar" ? "active" : ""}`}
-                  onClick={() => filterProducts("Pixar")}
-                >
-                  Pixar
-                </button>
-                <button
-                  className={`btn btn-outline-dark me-2 ${activeCategory === "Harry Potter" ? "active" : ""}`}
-                  onClick={() => filterProducts("Harry Potter")}
-                >
-                  Harry Potter
-                </button>
-                <button
-                  className={`btn btn-outline-dark me-2 ${activeCategory === "Pokémon" ? "active" : ""}`}
-                  onClick={() => filterProducts("Pokémon")}
-                >
-                  Pokémon
-                </button>
-                <button
-                  className={`btn btn-outline-dark me-2 ${activeCategory === "Music" ? "active" : ""}`}
-                  onClick={() => filterProducts("Music")}
-                >
-                  Music
-                </button>
-                <button
-                  className={`btn btn-outline-dark me-2 ${activeCategory === "Video Games" ? "active" : ""}`}
-                  onClick={() => filterProducts("Video Games")}
-                >
-                  Video Games
-                </button>
-              </div>
-              <div className="sort-options">
-                <label>Sort by:</label>
-                <select
-                  className="form-select"
-                  value={sortCriteria}
-                  onChange={handleSortChange}
-                >
-                  <option value="default">Default</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="name-asc">Name: A to Z</option>
-                  <option value="name-desc">Name: Z to A</option>
-                </select>
-              </div>
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Star Wars" ? "active" : ""
+                }`}
+                onClick={() => filterProducts("Star Wars")}
+              >
+                Star Wars
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Pixar" ? "active" : ""
+                }`}
+                onClick={() => filterProducts("Pixar")}
+              >
+                Pixar
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Harry Potter" ? "active" : ""
+                }`}
+                onClick={() => filterProducts("Harry Potter")}
+              >
+                Harry Potter
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Pokémon" ? "active" : ""
+                }`}
+                onClick={() => filterProducts("Pokémon")}
+              >
+                Pokémon
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Music" ? "active" : ""
+                }`}
+                onClick={() => filterProducts("Music")}
+              >
+                Music
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  activeCategory === "Video Games" ? "active" : ""
+                }`}
+                onClick={() => filterProducts("Video Games")}
+              >
+                Video Games
+              </button>
+            </div>
+            <div className="sort-options">
+              <label>Sort by:</label>
+              <select
+                className="form-select"
+                value={sortCriteria}
+                onChange={handleSortChange}
+              >
+                <option value="default">Default</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
+              </select>
             </div>
           </div>
-          {loading ? <Loading /> : <ShowProducts />}
         </div>
+        {loading ? <Loading /> : <ShowProducts />}
       </div>
-    );
-  };
-  
-  export default Products;
+    </div>
+  );
+};

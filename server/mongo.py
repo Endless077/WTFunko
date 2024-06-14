@@ -328,11 +328,16 @@ async def get_all_products() -> List[Product]:
         raise HTTPException(status_code=500, detail="Failed to get products.")
 
 
+async def get_unique_products_count() -> int:
+    products = DATABASE["Products"]
+    # Setup max page and range index
+    count = products.count_documents({})
+    return count
+
+
 async def get_products_from_page(pageIndex: int) -> List[Product]:
     try:
-        # Collection Products
         products = DATABASE["Products"]
-        
         # Setup max page and range index
         count = products.count_documents({})
         max_pages = math.ceil(count / 20.0)
@@ -341,9 +346,10 @@ async def get_products_from_page(pageIndex: int) -> List[Product]:
         
         # Query to find Products info in the collection by pageIndex
         LOG_SYS.write(TAG, "Query to get products pages executing.")
-        start_range = pageIndex * 20
-        end_range = min((pageIndex + 1) * 20, count)
-        product_data = list(products.find().skip(start_range).limit(end_range))
+        amountPerPage = 20
+        start_range = pageIndex * amountPerPage
+        end_range = min((pageIndex + 1) * amountPerPage, count)
+        product_data = list(products.find().skip(start_range).limit(end_range-start_range))
         if not product_data:
             LOG_SYS.write(TAG, "No Products found.")
             return []
@@ -354,9 +360,9 @@ async def get_products_from_page(pageIndex: int) -> List[Product]:
         return products
     
     except Exception as e:
-        # Other unexpected events occurred
         LOG_SYS.write(TAG, f"Query to get all products failed with error: {e}.")
         raise HTTPException(status_code=500, detail="Failed to get products.")
+
 
 async def get_product(product_id) -> Product:
     try:
