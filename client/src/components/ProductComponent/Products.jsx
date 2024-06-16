@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import React from "react";
 import "./Products.css";
+import { config, getApiUrl } from "../../utils";
 
 export const Products = () => {
   const uniqueProductsCountKey = "Unique Products Count Result";
@@ -23,14 +24,23 @@ export const Products = () => {
   // Gets the amount of unique products.
   useEffect(() => {
     const getProducts = async () => {
-      setLoading(true);
-      const uniqueProductsCountFetch = await fetch(
-        "http://localhost:8000/getUniqueProductsCount"
-      );
-      const uniqueProductsCountResult = await uniqueProductsCountFetch.json();
-      localStorage.setItem(uniqueProductsCountKey, uniqueProductsCountResult);
-      setLoading(false);
+      try {
+        setLoading(true);
+
+        const uniqueProductsCountFetch = await fetch(
+          getApiUrl(config.endpoints.getUniqueProductsCount.url),
+          { method: config.endpoints.getUniqueProductsCount.method }
+        );
+
+        const uniqueProductsCountResult = await uniqueProductsCountFetch.json();
+        localStorage.setItem(uniqueProductsCountKey, uniqueProductsCountResult);
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching page products:", error);
+      }
     };
+
     getProducts();
   }, [currentPage]);
 
@@ -38,9 +48,15 @@ export const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const pageProductsFetch = await fetch(
-          `http://localhost:8000/getProductsFromPage/${currentPage}`
+        const pageProductsFetchUrl = getApiUrl(
+          config.endpoints.getProductsFromPage.url
         );
+        
+        const pageProductsFetch = await fetch(
+          pageProductsFetchUrl.replace("{pageIndex}", currentPage),
+          { method: config.endpoints.getProductsFromPage.method }
+        );
+
         const pageProductsResult = await pageProductsFetch.json();
         setData(pageProductsResult);
       } catch (error) {
@@ -154,6 +170,7 @@ export const Products = () => {
     const maxPageDisplay = 10;
     const startPage = Math.floor(currentPage / maxPageDisplay) * maxPageDisplay;
     const endPage = Math.min(startPage + maxPageDisplay, totalPages);
+
     return (
       <>
         {data.length === 0 ? (

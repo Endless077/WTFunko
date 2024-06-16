@@ -1,8 +1,9 @@
 # Utils             
 
 # Math Libraries
-import random
+import uuid
 import bcrypt
+import hashlib
 import pandas as pd
 
 # OS libraries
@@ -10,9 +11,6 @@ import os
 
 # Struct libreries
 import json
-
-# Time libreries
-from datetime import datetime as dt
 
 # String libraries
 import re
@@ -125,82 +123,19 @@ def append_to_json(filename: str, data: dict) -> bool:
 
 ##################################################################################################
 
-# Generate hash string
+# Generate Hash
 def hash_string(string: str) -> bytes:
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(string.encode(), salt)
+    hashed = bcrypt.hashpw(string.encode('utf-8'), salt)
     return hashed
 
-def hash_string_match(string: str, hashed: bytes) -> bool:
-    return bcrypt.checkpw(string.encode(), hashed)
-
-##################################################################################################
-
-# Generate user random id
-def generate_random_id() -> str:
-    return ''.join(random.choices(string.digits, k=6))
-
-# Generate random order id
-def generate_order_id() -> str:
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-
-# Generate random funko id
-def generate_funko_id() -> str:
-     return ''.join(random.choices(string.digits, k=13))
-
-# Setup a new user
-def new_user(username: str, email: str, password: str) -> dict:
-    user_id = generate_random_id(username)
+def hash_string_match(string: str, hashed: str) -> bool:
+    return bcrypt.checkpw(string.encode('utf-8'), hashed.encode('utf-8'))
     
-    hashed_password = hash_string(password)
-    return {
-        f"{username}_{user_id}":{
-            "_id": user_id,
-            "username": username,
-            "email": email,
-            "password": hashed_password
-        }
-    }
-
-# Setup a new order
-def new_order(user: dict, products: list[tuple], status: str) -> dict:
-    order_id = generate_order_id()
-    
-    current_date = dt.now().isoformat()
-    total = sum(funko["price"] * quantity for funko, quantity in products)
-    return {
-        f"#{order_id}":{
-            "_id": order_id,
-            "user": user,
-            "products": products,
-            "total": total,
-            "date": current_date,
-            "status": status
-        }
-    }
-
-# Setup a new funko
-def new_funko(title, product_type: str, price: float,
-              interest: list[str], license: list[str], tags: list[str],
-              vendor: str, form_factor: list[str], feature: list[str],
-              related: list[str], description: str, img: str) -> dict:
-    funko_id = generate_funko_id()
-    return {
-        f"funko_{funko_id}":{
-            "_id": funko_id,
-            "title": title,
-            "product_type": product_type,
-            "price": price,
-            "interest": interest,
-            "license": license,
-            "tags": tags,
-            "vendor": vendor,
-            "form_factor": form_factor,
-            "feature": feature,
-            "related": related,
-            "description": description,
-            "img": img
-        }
-    }
+# Generate UID
+def generate_unique_id(length: int, string: bool = False):
+    unique_id = uuid.uuid4()
+    hashed_id = hashlib.md5(str(unique_id).encode()).hexdigest()[:length]
+    return hashed_id if string else int(hashed_id, 16)
 
 ##################################################################################################

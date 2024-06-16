@@ -62,17 +62,15 @@ app.add_middleware(
 
 TAG_USERS = ["Users"]
 
-@app.get("/login", status_code=200, response_model=User, tags=TAG_USERS, description="Login a user account.")
-async def login(username: str, password: str):
+@app.post("/login", status_code=200, response_model=User, tags=TAG_USERS, description="Login a user account.")
+async def login(user: User):
     try:
-        LOG_SYS.write(TAG, f"Login user with username: {username} and password: {password}.")
-        user_data = await get_user(username)
+        LOG_SYS.write(TAG, f"Login user with username: {user.username} and password: {user.password}.")
+        user_data = await get_user(user.username)
         
-        hashedPassword = user_data.password
-        if(hash_string_match(password, hashedPassword)):
-            return user_data
-        else:
-            raise HTTPException(status_code=401, detail="User password don't match")
+        if hash_string_match(user.password, user_data.password): return user_data 
+        else: raise HTTPException(status_code=401, detail="User password don't match")
+ 
     except HTTPException as e:
         LOG_SYS.write(TAG, "An HTTP error occured with Exception: {e}")
         raise e
@@ -95,7 +93,7 @@ async def signup(user: User):
 
 
 @app.get("/getUser", status_code=200, response_model=User, tags=TAG_USERS, description="Get a specific user by username or email.")
-async def getUser(username: str, email: str):
+async def getUser(username: str, email: str = None):
     try:
         LOG_SYS.write(TAG, f"Getting user information with username: {username} or email: {email}.")
         user_data = await get_user(username, email)
@@ -103,7 +101,9 @@ async def getUser(username: str, email: str):
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An error occured with Excepytion: {e}")
         raise e
-
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/insertUser", status_code=201, tags=TAG_USERS, description="Insert a new user in the database.")
 async def insertUser(user: User):
@@ -407,5 +407,4 @@ def shutdown():
 if __name__ == '__main__':
     welcome_message()
     connect(host="localhost", port=27017, db_name="WTFunko")
-    #uvicorn.run(app, host="127.0.0.1", port=8000)
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
