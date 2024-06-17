@@ -105,6 +105,7 @@ async def getUser(username: str, email: str = None):
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/insertUser", status_code=201, tags=TAG_USERS, description="Insert a new user in the database.")
 async def insertUser(user: User):
     try:
@@ -238,25 +239,24 @@ async def getAllProducts():
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@app.get("/getProductsFromPage/{pageIndex}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a page.")
-async def getProductsFromPage(pageIndex: int):
+@app.get("/getProductsFromPage", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a category from a page.")
+async def getProductsFromPage(category: str, searchTerm:str, pageIndex: int):
     try:
         LOG_SYS.write(TAG, f"Getting products from page...")
-        products = await get_products_from_page(pageIndex)
+        products = await get_products_from_page(category, searchTerm, pageIndex)
         return products
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
         raise e
     except Exception as e:
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))    
     
 
-@app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of products.")
-async def getUniqueProductsCount():
+@app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of unique products for a specific category.")
+async def getUniqueProductsCount(category:str, searchTerm:str):
     try:
-        LOG_SYS.write(TAG, f"Getting all product from Database.")
-        count = await get_unique_products_count()
+        count = await get_unique_products_count(category, searchTerm)
         return count
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -284,7 +284,7 @@ async def getProduct(product_id: int):
 async def getByCategory(category: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by search category: {category}.")
-        products = await get_product_by_category(category)
+        products = await get_products_by_category(category)
         return products
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")

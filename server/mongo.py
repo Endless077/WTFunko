@@ -279,21 +279,33 @@ async def get_all_products() -> List[Product]:
     return products
 
 
-async def get_unique_products_count() -> int:
-    # Collection Products
+def getCombinedFilter(category: str, searchTerm: str) -> dict:
+    category_filter = {} if category.lower() == "all" else {"interest": {"$in": [category]}}
+    search_filter = {
+        "$or": [
+            {"title": {"$regex": searchTerm, "$options": "i"}},
+            {"description": {"$regex": searchTerm, "$options": "i"}}
+        ]
+    }
+    combined_filters = {"$and": [category_filter, search_filter]}
+    return combined_filters
+
+
+async def get_unique_products_count(category: str, searchTerm: str) -> int:
     products = DATABASE["Products"]
-    
-    # Setup max page and range index
-    count = products.count_documents({})
+    filter = getCombinedFilter(category, searchTerm)
+    count = products.count_documents(filter)
     return count
 
 
-async def get_products_from_page(pageIndex: int) -> List[Product]:
-    # Collection Products
+async def get_products_from_page(category: str, searchTerm: str, pageIndex: int) -> List[Product]:
     products = DATABASE["Products"]
-    
+    filter = getCombinedFilter(category, searchTerm)
     # Setup max page and range index
-    count = products.count_documents({})
+    count = await get_unique_products_count(category, searchTerm)
+    if count == 0:
+        LOG_SYS.write(TAG, "No Products found.")
+        return [] 
     max_pages = math.ceil(count / 20.0)
     if pageIndex < 0 or pageIndex > max_pages - 1:
         raise ValueError("Invalid pages range specified.")
@@ -303,7 +315,7 @@ async def get_products_from_page(pageIndex: int) -> List[Product]:
     amountPerPage = 20
     start_range = pageIndex * amountPerPage
     end_range = min((pageIndex + 1) * amountPerPage, count)
-    product_data = list(products.find().skip(start_range).limit(end_range - start_range))
+    product_data = list(products.find(filter).skip(start_range).limit(end_range - start_range))
     if not product_data:
         LOG_SYS.write(TAG, "No Products found.")
         return []
@@ -330,7 +342,7 @@ async def get_product(product_id) -> Product:
     return product
 
 
-async def get_product_by_category(category: str) -> List[Product]:
+async def get_products_by_category(category: str) -> List[Product]:
     # Collection Products
     collection = DATABASE["Products"]
 
@@ -421,7 +433,7 @@ async def filter_product(
     # Filter by category if specified
     if category:
         LOG_SYS.write(TAG, f"Filtering products by category '{category}'")
-        products = await get_product_by_category(category)
+        products = await get_products_by_category(category)
 
     # Filter by search string if specified
     if search_string:
