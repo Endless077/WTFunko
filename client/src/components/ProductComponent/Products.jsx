@@ -95,9 +95,9 @@ export const Products = () => {
     );
     if (existingProductIndex !== -1) {
       updatedCart = [...cart];
-      updatedCart[existingProductIndex].quantity += 1;
+      updatedCart[existingProductIndex].cartQuantity += 1;
     } else {
-      updatedCart = [...cart, { ...product, quantity: 1 }];
+      updatedCart = [...cart, { ...product, cartQuantity: 1 }];
     }
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
@@ -142,9 +142,9 @@ export const Products = () => {
     return <>Loading...</>;
   };
 
-  const handleQuantityChange = (productId, quantity) => {
+  const handleQuantityChange = (productId, cartQuantity) => {
     const updatedCart = cart.map((item) =>
-      item._id === productId ? { ...item, quantity } : item
+      item._id === productId ? { ...item, cartQuantity } : item
     );
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
@@ -194,7 +194,7 @@ export const Products = () => {
                           className="form-select mb-2"
                           value={
                             cart.find((item) => item._id === product._id)
-                              .quantity
+                              .cartQuantity
                           }
                           onChange={(e) =>
                             handleQuantityChange(product._id, +e.target.value)

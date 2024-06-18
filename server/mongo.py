@@ -216,7 +216,7 @@ async def insert_order(order_data: Order) -> str:
         raise HTTPException(status_code=400, detail="Order already exists")
 
     # Insert one new order data into database
-    order_data.id = generate_unique_id(length=13, string=False)
+    order_data.id = generate_unique_id(length=13, string=True)
     result = collection.insert_one(order_data.model_dump(by_alias=True))
 
     # Return success message
