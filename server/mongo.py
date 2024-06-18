@@ -11,6 +11,7 @@ from utils.database import get_database
 from mongo import *
 from models import *
 from utils.utils import *
+from utils.criteria import *
 
 # Utils
 import math
@@ -298,9 +299,11 @@ async def get_unique_products_count(category: str, searchTerm: str) -> int:
     return count
 
 
-async def get_products_from_page(category: str, searchTerm: str, pageIndex: int) -> List[Product]:
+async def get_products_from_page(category: str, searchTerm: str, criteria:Criteria,
+                                  pageIndex: int) -> List[Product]:
     products = DATABASE["Products"]
     filter = getCombinedFilter(category, searchTerm)
+    sort = getCriteriaSorting(criteria)
     # Setup max page and range index
     count = await get_unique_products_count(category, searchTerm)
     if count == 0:
@@ -315,7 +318,8 @@ async def get_products_from_page(category: str, searchTerm: str, pageIndex: int)
     amountPerPage = 20
     start_range = pageIndex * amountPerPage
     end_range = min((pageIndex + 1) * amountPerPage, count)
-    product_data = list(products.find(filter).skip(start_range).limit(end_range - start_range))
+
+    product_data = list(products.find(filter).sort(sort).skip(start_range).limit(end_range - start_range))
     if not product_data:
         LOG_SYS.write(TAG, "No Products found.")
         return []
@@ -366,7 +370,6 @@ async def get_products_by_category(category: str) -> List[Product]:
 
 
 async def get_product_by_search(search_string: str) -> List[Product]:
-    # Collection Products
     collection = DATABASE["Products"]
 
     # Query to find products by search string in the title

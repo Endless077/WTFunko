@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import React from "react";
+import { Criteria } from "../../criteria";
 
 import "./Products.css";
 import { config, getApiUrl } from "../../utils";
@@ -16,6 +17,8 @@ export const Products = () => {
   const currentPage = parseInt(queryParams.get("page")) || 0;
   const currentCategory = queryParams.get("category") || "All";
   const currentSearchTerm = queryParams.get("searchTerm") || "";
+  const currentSortingCriteria =
+    queryParams.get("sortingCriteria") || Criteria.DEFAULT;
 
   const [products, setProducts] = useState([]);
 
@@ -23,7 +26,6 @@ export const Products = () => {
   const [cart, setCart] = useState([]);
 
   const [productsPerPage] = useState(20);
-  const [sortCriteria, setSortCriteria] = useState("default");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Gets the amount of unique products.
@@ -61,7 +63,7 @@ export const Products = () => {
           config.endpoints.getProductsFromPage.url
         );
 
-        const queryAppend = `?category=${currentCategory}&searchTerm=${currentSearchTerm}&pageIndex=${currentPage}`;
+        const queryAppend = `?category=${currentCategory}&searchTerm=${currentSearchTerm}&sortingCriteria=${currentSortingCriteria}&pageIndex=${currentPage}`;
 
         const pageProductsFetch = await fetch(
           pageProductsFetchUrl + queryAppend,
@@ -78,7 +80,7 @@ export const Products = () => {
     if (currentPage !== null) {
       fetchProducts();
     }
-  }, [currentCategory, currentSearchTerm, currentPage]);
+  }, [currentCategory, currentSearchTerm, currentSortingCriteria, currentPage]);
 
   useEffect(() => {
     const fetchCart = () => {
@@ -103,30 +105,10 @@ export const Products = () => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
-  const sortProducts = (criteria) => {
-    let sortedProducts = [...filter];
-    switch (criteria) {
-      case "price-asc":
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      case "name-asc":
-        sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case "name-desc":
-        sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
-        break;
-      default:
-        sortedProducts = products;
-        break;
-    }
-  };
-
   const handlePageChange = async (
     category = currentCategory,
     searchTerm = currentSearchTerm,
+    sortingCriteria = currentSortingCriteria,
     pageIndex = currentPage
   ) => {
     if (category !== currentCategory || searchTerm !== currentSearchTerm) {
@@ -134,7 +116,7 @@ export const Products = () => {
       pageIndex = 0;
     }
     navigate(
-      `?category=${category}&searchTerm=${searchTerm}&page=${pageIndex}`
+      `?category=${category}&searchTerm=${searchTerm}&sortingCriteria=${sortingCriteria}&page=${pageIndex}`
     );
   };
 
@@ -399,14 +381,28 @@ export const Products = () => {
               <label>Sort by:</label>
               <select
                 className="form-select"
-                value={sortCriteria}
-                onChange={handlePageChange}
+                value={currentSortingCriteria}
+                onChange={(e) =>
+                  handlePageChange(
+                    currentCategory,
+                    currentSearchTerm,
+                    e.target.value
+                  )
+                }
               >
-                <option value="default">Default</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Name: A to Z</option>
-                <option value="name-desc">Name: Z to A</option>
+                <option value={Criteria.DEFAULT}>Most Recent</option>
+                <option value={Criteria.PRICE_ASCENDING}>
+                  Price: Low to High &#x25B2;
+                </option>
+                <option value={Criteria.PRICE_DESCENDING}>
+                  Price: High to Low &#x25BC;
+                </option>
+                <option value={Criteria.TITLE_ASCENDING}>
+                  Title: A to Z &#x25B2;
+                </option>
+                <option value={Criteria.TITLE_DESCENDING}>
+                  Title: Z to A &#x25BC;
+                </option>
               </select>
             </div>
           </div>

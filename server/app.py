@@ -1,5 +1,5 @@
 # FastAPI
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 import uvicorn
 
@@ -241,17 +241,17 @@ async def getAllProducts():
 
 #TODO: usare ProductFilter Model per avere un accesso più ordinato
 @app.get("/getProductsFromPage", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a category from a page.")
-async def getProductsFromPage(category: str, searchTerm: str, pageIndex: int):
+async def getProductsFromPage(category: str, searchTerm: str, sortingCriteria: Criteria, pageIndex: int):
     try:
         LOG_SYS.write(TAG, f"Getting products from page...")
-        products = await get_products_from_page(category, searchTerm, pageIndex)
+        products = await get_products_from_page(category, searchTerm, sortingCriteria, pageIndex)
         return products
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
         raise e
     except Exception as e:
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))    
+        raise HTTPException(status_code=500, detail=str(e))
     
 
 @app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of unique products for a specific category.")
