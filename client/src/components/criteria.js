@@ -1,3 +1,4 @@
+// Enumeration - Criteria
 export const Criteria = {
   DEFAULT: "Default",
   PRICE_ASCENDING: "Price Ascending",

@@ -1,6 +1,18 @@
 /* Register.css */
+.btn-outline-dark {
+  border-color: #343a40;
+  color: #343a40;
+  margin-top: 1rem;
+}
 
-/* Imposta lo stile di base per la pagina di registrazione */
+.btn-outline-dark:focus {
+  box-shadow: none;
+}
+
+.btn-outline-dark:hover {
+  background-color: #343a40;
+  color: #fff;
+}
 
 .card {
   border: 1px solid #ddd;
@@ -17,36 +29,20 @@
   margin-bottom: 1.5rem;
 }
 
-.form-label {
-  font-weight: bold;
-}
-
 .form-control {
   border-radius: 0.25rem;
   padding: 0.75rem;
 }
 
-.btn-outline-dark {
-  border-color: #343a40;
-  color: #343a40;
-  margin-top: 1rem;
-}
-
-.btn-outline-dark:hover {
-  background-color: #343a40;
-  color: #fff;
-}
-
-.btn-outline-dark:focus {
-  box-shadow: none;
-}
-
-/* Stile per il messaggio sopra il pulsante di registrazione */
-.text-center p {
-  margin-top: 1rem;
-  font-size: 1rem;
+.form-label {
+  font-weight: bold;
 }
 
 .ms-2 {
   margin-left: 0.5rem;
+}
+
+.text-center p {
+  font-size: 1rem;
+  margin-top: 1rem;
 }

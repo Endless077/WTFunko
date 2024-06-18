@@ -1,74 +1,9 @@
-.search-bar {
-  width: 50%;
-  margin: auto;
-}
-
-.custom-search-bar {
-  display: flex;
-  align-items: center;
-}
-
-.custom-search-input {
-  width: calc(100% - 50px);
-  border: 2px solid #343a40;
-  border-radius: 20px 0 0 20px;
-  padding: 8px 12px;
-  font-size: 16px;
-  outline: none;
-}
-
-.custom-search-button {
-  background-color: #fff;
-  color: #343a40;
-  border: 2px solid #343a40;
-  border-radius: 0 20px 20px 0;
-  padding: 8px 16px;
-  cursor: pointer;
-  margin-left: -2px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.custom-search-button:hover {
-  background-color: #343a40;
-  color: #fff;
-  border-color: #343a40;
-}
-
-.custom-search-button:focus {
-  outline: none;
-}
-
-.custom-search-icon {
-  color: #343a40;
-}
-/*----------------------------------------------------------------------------*/
-.sort-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 20px;
-}
-
-.sort-bar label {
-  margin-bottom: 5px;
-}
-
-.sort-bar select {
-  width: 200px;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
+/* Products.css */
 .category-bar {
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   margin-right: 20px;
-}
-
-.category-bar label {
-  margin-bottom: 5px;
 }
 
 .category-buttons {
@@ -80,20 +15,70 @@
   margin-bottom: 10px;
 }
 
-/* Styling for the pagination */
+.category-buttons .btn.active,
+.category-buttons .btn:hover {
+  background-color: #343a40;
+  border-color: #343a40;
+  color: #fff;
+}
+
+.custom-search-bar {
+  align-items: center;
+  display: flex;
+}
+
+.custom-search-button {
+  background-color: #fff;
+  border: 2px solid #343a40;
+  border-radius: 0 20px 20px 0;
+  color: #343a40;
+  cursor: pointer;
+  margin-left: -2px;
+  padding: 8px 16px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.custom-search-button:focus {
+  outline: none;
+}
+
+.custom-search-icon {
+  color: #343a40;
+}
+
+.custom-search-input {
+  border: 2px solid #343a40;
+  border-radius: 20px 0 0 20px;
+  font-size: 16px;
+  outline: none;
+  padding: 8px 12px;
+  width: calc(100% - 50px);
+}
+
 .pagination {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
+.pagination .page-arrow {
+  color: #007bff;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin: 0 10px;
+}
+
+.pagination .page-arrow:hover {
+  color: #0056b3;
+}
+
 .pagination .page-item {
-  margin: 0 5px;
-  padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  cursor: pointer;
   color: #007bff;
+  cursor: pointer;
+  margin: 0 5px;
+  padding: 8px 12px;
   text-decoration: none;
 }
 
@@ -106,20 +91,25 @@
   background-color: #ddd;
 }
 
-.pagination .page-arrow {
-  margin: 0 10px;
-  cursor: pointer;
-  font-size: 1.2em;
-  color: #007bff;
+.search-bar {
+  margin: auto;
+  width: 50%;
 }
 
-.pagination .page-arrow:hover {
-  color: #0056b3;
+.sort-bar {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.category-buttons .btn.active,
-.category-buttons .btn:hover {
-  background-color: #343a40;
-  color: #fff;
-  border-color: #343a40;
+.sort-bar label {
+  margin-bottom: 5px;
+}
+
+.sort-bar select {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  width: 200px;
 }

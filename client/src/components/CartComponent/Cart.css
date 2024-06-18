@@ -1,12 +1,18 @@
+/* Cart.css */
+.cart-button {
+  border: none;
+  margin-right: -45px;
+}
+
 .cart-container {
+  align-items: center;
   border: 2px solid #ccc;
   border-radius: 20px;
-  overflow: hidden;
-  margin: 20px auto;
-  width: 50%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  margin: 20px auto;
+  overflow: hidden;
+  width: 50%;
 }
 
 .cart-table {
@@ -14,15 +20,10 @@
   border: none;
 }
 
-.cart-table tfoot tr {
-  border: none;
-}
-
 .cart-table tfoot td {
   border: none;
 }
 
-.cart-button {
+.cart-table tfoot tr {
   border: none;
-  margin-right: -45px;
 }

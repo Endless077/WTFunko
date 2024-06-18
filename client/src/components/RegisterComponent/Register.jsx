@@ -1,9 +1,12 @@
+// Signup Component
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Navbar";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+
+// Utils
 import "./Register.css";
-import { config, getApiUrl } from "../../utils";
+import { config, fetchData } from "../../utils";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -15,51 +18,70 @@ const Register = () => {
 
   const navigate = useNavigate();
 
+  /* ********************************************************************************************* */
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    const signupRequest = async () => {
+      try {
+        const endpointUrl = config.endpoints.signup.url;
+        const method = config.endpoints.signup.method;
+        const payload = { username, email, password };
+
+        const signupResponseData = await fetchData(
+          endpointUrl,
+          method,
+          null,
+          payload
+        );
+
+        if (!signupResponseData.ok) {
+          throw new Error(
+            signupResponseData.detail ||
+              "Registration failed. Please try again later."
+          );
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Registration Successful",
+          text: `Welcome ${username}`,
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          willClose: () => {
+            navigate("/");
+          },
+        });
+
+        return payload;
+      } catch (error) {
+        console.error("Error signup attempt:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error during signup attempt",
+          text: error.message,
+        });
+      }
+    };
 
     try {
+      e.preventDefault();
+      setLoading(true);
+      setError("");
+
       if (username.length < 4 || username.length > 20) {
         throw new Error("Username must be between 4 and 20 characters.");
-      }else if (!/\S+@\S+\.\S+/.test(email)) {
+      } else if (!/\S+@\S+\.\S+/.test(email)) {
         throw new Error("Invalid email format.");
-      }else if (!validatePassword(password)) {
+      } else if (!validatePassword(password)) {
         throw new Error(
           "Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long."
         );
       }
 
-      const newUser = { username, email, password };
-
-      const response = await fetch(getApiUrl(config.endpoints.signup.url), {
-        method: config.endpoints.signup.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(
-          data.detail || "Registration failed. Please try again later."
-        );
-      }
-
+      const newUser = await signupRequest();
       localStorage.setItem("user", JSON.stringify(newUser));
-
-      Swal.fire({
-        icon: "success",
-        title: "Registration Successful",
-        text: `Welcome ${username}`,
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        allowOutsideClick: false,
-        willClose: () => {
-          navigate("/");
-        },
-      });
     } catch (error) {
       console.error("Error during registration:", error);
       setError(error.message);
@@ -82,6 +104,8 @@ const Register = () => {
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{6,}$/;
     return passwordRegex.test(password);
   };
+
+  /* ********************************************************************************************* */
 
   return (
     <>

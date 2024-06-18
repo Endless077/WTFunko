@@ -1,11 +1,14 @@
+// Products Component
+import React from "react";
+import Swal from "sweetalert2";
+import { FaSearch } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
-import React from "react";
-import { Criteria } from "../../criteria";
 
+// Utils
 import "./Products.css";
-import { config, getApiUrl } from "../../utils";
+import { Criteria } from "../criteria";
+import { config, fetchData } from "../../utils";
 
 export const Products = () => {
   const uniqueProductsCountKey = "Unique Products Count Result";
@@ -14,66 +17,79 @@ export const Products = () => {
   const navigate = useNavigate();
 
   const queryParams = new URLSearchParams(location.search);
+
   const currentPage = parseInt(queryParams.get("page")) || 0;
   const currentCategory = queryParams.get("category") || "All";
   const currentSearchTerm = queryParams.get("searchTerm") || "";
   const currentSortingCriteria =
     queryParams.get("sortingCriteria") || Criteria.DEFAULT;
 
-  const [products, setProducts] = useState([]);
-
-  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
-
   const [productsPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Gets the amount of unique products.
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  /* ********************************************************************************************* */
+
   useEffect(() => {
-    const getProducts = async () => {
+    const getUniqueProductsCount = async () => {
       try {
-        const uniqueProductsCountFetchUrl = getApiUrl(
-          config.endpoints.getUniqueProductsCount.url
+        const endpointUrl = config.endpoints.getUniqueProductsCount.url;
+        const method = config.endpoints.getUniqueProductsCount.method;
+        const queryParams = {
+          category: currentCategory,
+          searchTerm: currentSearchTerm,
+        };
+        const uniqueProductsCountResponse = await fetchData(
+          endpointUrl,
+          method,
+          queryParams
         );
 
-        const queryAppend = `?category=${currentCategory}&searchTerm=${currentSearchTerm}`;
-
-        const uniqueProductsCountFetch = await fetch(
-          uniqueProductsCountFetchUrl + queryAppend,
-          { method: config.endpoints.getUniqueProductsCount.method }
-        );
-
-        const uniqueProductsCountResult = await uniqueProductsCountFetch.json();
-        localStorage.setItem(uniqueProductsCountKey, uniqueProductsCountResult);
-        // TODO: This can trigger an error if it ends before the counting of the products (for the rendering).
+        const uniqueProductsCount = await uniqueProductsCountResponse.json();
+        localStorage.setItem(uniqueProductsCountKey, uniqueProductsCount);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching page products:", error);
+        console.error("Error fetching page counter:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error during resources loading",
+          text: error.message,
+        });
       }
     };
 
-    getProducts();
+    getUniqueProductsCount();
   }, [currentCategory, currentSearchTerm]);
 
-  // Fetch the products from the current page.
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const pageProductsFetchUrl = getApiUrl(
-          config.endpoints.getProductsFromPage.url
+        const endpointUrl = config.endpoints.getProducts.url;
+        const method = config.endpoints.getProducts.method;
+        const queryParams = {
+          category: currentCategory,
+          searchTerm: currentSearchTerm,
+          sortingCriteria: currentSortingCriteria,
+          pageIndex: currentPage,
+        };
+        const productsResponse = await fetchData(
+          endpointUrl,
+          method,
+          queryParams
         );
 
-        const queryAppend = `?category=${currentCategory}&searchTerm=${currentSearchTerm}&sortingCriteria=${currentSortingCriteria}&pageIndex=${currentPage}`;
-
-        const pageProductsFetch = await fetch(
-          pageProductsFetchUrl + queryAppend,
-          { method: config.endpoints.getProductsFromPage.method }
-        );
-
-        const pageProductsResult = await pageProductsFetch.json();
-        setProducts(pageProductsResult);
+        const products = await productsResponse.json();
+        setProducts(products);
       } catch (error) {
         console.error("Error fetching page products:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error during resources loading",
+          text: error.message,
+        });
       }
     };
 
@@ -90,6 +106,12 @@ export const Products = () => {
     fetchCart();
   }, []);
 
+  /* ********************************************************************************************* */
+
+  const Loading = () => {
+    return <>Loading...</>;
+  };
+
   const addToCart = (product) => {
     let updatedCart;
     const existingProductIndex = cart.findIndex(
@@ -105,25 +127,6 @@ export const Products = () => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
-  const handlePageChange = async (
-    category = currentCategory,
-    searchTerm = currentSearchTerm,
-    sortingCriteria = currentSortingCriteria,
-    pageIndex = currentPage
-  ) => {
-    if (category !== currentCategory || searchTerm !== currentSearchTerm) {
-      // Reset the page index when we change category.
-      pageIndex = 0;
-    }
-    navigate(
-      `?category=${category}&searchTerm=${searchTerm}&sortingCriteria=${sortingCriteria}&page=${pageIndex}`
-    );
-  };
-
-  const Loading = () => {
-    return <>Loading...</>;
-  };
-
   const handleQuantityChange = (productId, cartQuantity) => {
     const updatedCart = cart.map((item) =>
       item._id === productId ? { ...item, cartQuantity } : item
@@ -131,6 +134,22 @@ export const Products = () => {
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
+
+  const handlePageChange = async (
+    category = currentCategory,
+    searchTerm = currentSearchTerm,
+    sortingCriteria = currentSortingCriteria,
+    pageIndex = currentPage
+  ) => {
+    if (category !== currentCategory || searchTerm !== currentSearchTerm) {
+      pageIndex = 0;
+    }
+    navigate(
+      `?category=${category}&searchTerm=${searchTerm}&sortingCriteria=${sortingCriteria}&page=${pageIndex}`
+    );
+  };
+
+  /* ********************************************************************************************* */
 
   const ShowProducts = () => {
     const uniqueProductsCountResult = localStorage.getItem(
@@ -225,6 +244,7 @@ export const Products = () => {
                 handlePageChange(
                   currentCategory,
                   currentSearchTerm,
+                  currentSortingCriteria,
                   startPage + number
                 )
               }
@@ -239,7 +259,12 @@ export const Products = () => {
             <span
               className="page-arrow"
               onClick={() =>
-                handlePageChange(currentCategory, currentSearchTerm, endPage)
+                handlePageChange(
+                  currentCategory,
+                  currentSearchTerm,
+                  currentSortingCriteria,
+                  endPage
+                )
               }
             >
               &raquo;

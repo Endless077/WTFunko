@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { Navbar } from "../../Navbar";
 import "./ProductInfo.css";
 
-//TODO : When switching to real backend, change product.thumbnail into product.image
 const ProductInfo = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -12,7 +11,7 @@ const ProductInfo = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/getProduct/${id}`);
+        const response = await fetch(`http://localhost:8000/getByID/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {

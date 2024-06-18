@@ -1,11 +1,14 @@
-.navbar {
-  border: none; /* Rimuove tutti i bordi dalla navbar */
-}
-.navbar-brand img {
-  max-width: 200px;
-  height: auto;
-}
+/* Navbar.css F*/
 .buttons {
-  display: flex;
   align-items: center;
+  display: flex;
+}
+
+.navbar {
+  border: none;
+}
+
+.navbar-brand img {
+  height: auto;
+  max-width: 200px;
 }

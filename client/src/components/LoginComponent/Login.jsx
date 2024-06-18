@@ -1,9 +1,12 @@
+// Login Component
 import React, { useState } from "react";
 import { Navbar } from "../Navbar";
-import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Link, useNavigate } from "react-router-dom";
+
+// Utils
 import "./Login.css";
-import { config, getApiUrl } from "../../utils";
+import { config, fetchData } from "../../utils";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -14,6 +17,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  /* ********************************************************************************************* */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -22,14 +27,14 @@ const Login = () => {
     try {
       if (username.length < 4 || username.length > 20) {
         throw new Error("Username must be between 4 and 20 characters.");
-      }else if(!validatePassword(password)) {
+      } else if (!validatePassword(password)) {
         throw new Error(
           "Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long."
         );
       }
 
       const user = { username, email: username, password };
-      
+
       const response = await fetch(getApiUrl(config.endpoints.login.url), {
         method: config.endpoints.login.method,
         headers: { "Content-Type": "application/json" },
@@ -78,6 +83,8 @@ const Login = () => {
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{6,}$/;
     return passwordRegex.test(password);
   };
+
+  /* ********************************************************************************************* */
 
   return (
     <>

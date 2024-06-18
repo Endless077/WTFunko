@@ -1,3 +1,4 @@
+# Enumeration - Criteria
 from enum import Enum
 
 class Criteria(str, Enum):
@@ -10,7 +11,7 @@ class Criteria(str, Enum):
 
 def getCriteriaSorting(criteria:Criteria):
     if criteria == Criteria.DEFAULT:
-        return [("_id", 1)]
+        return [("$natural", -1)]
     if criteria == Criteria.PRICE_ASCENDING:
         return  [("price", 1)]
     if criteria == Criteria.PRICE_DESCENDING:
@@ -19,3 +20,4 @@ def getCriteriaSorting(criteria:Criteria):
         return [("title", 1)]
     if criteria == Criteria.TITLE_DESCENDING:
         return [("title", -1)]
+    

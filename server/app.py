@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Utils
 import os
 import sys
+import signal
 
 from utils.logger import get_logger
 from utils.database import *
@@ -225,6 +226,34 @@ async def updateOrder(order_id: str, order: Order):
 
 TAG_PRODUCTS = ["Products"]
 
+@app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of unique products for a specific category.")
+async def getUniqueProductsCount(category: str, searchTerm: str):
+    try:
+        LOG_SYS.write(TAG, f"Getting products count with category: {category} and search string: {searchTerm}.")
+        count = await get_unique_products_count(category, searchTerm)
+        return count
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+    
+@app.get("/getProducts", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a category from a page.")
+async def getProducts(category: str, searchTerm: str, sortingCriteria: Criteria, pageIndex: int):
+    try:
+        LOG_SYS.write(TAG, f"Getting products data with some filters at page index {pageIndex}.")
+        products = await get_products(category, searchTerm, sortingCriteria, pageIndex)
+        return products
+    except HTTPException as e:
+        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
+        raise e
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/getAllProducts", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get all products.")
 async def getAllProducts():
     try:
@@ -237,41 +266,13 @@ async def getAllProducts():
     except Exception as e:
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    
-
-#TODO: usare ProductFilter Model per avere un accesso più ordinato
-@app.get("/getProductsFromPage", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a category from a page.")
-async def getProductsFromPage(category: str, searchTerm: str, sortingCriteria: Criteria, pageIndex: int):
-    try:
-        LOG_SYS.write(TAG, f"Getting products from page...")
-        products = await get_products_from_page(category, searchTerm, sortingCriteria, pageIndex)
-        return products
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
-@app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of unique products for a specific category.")
-async def getUniqueProductsCount(category: str, searchTerm: str):
-    try:
-        count = await get_unique_products_count(category, searchTerm)
-        return count
-    except HTTPException as e:
-        LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
-        raise e
-    except Exception as e:
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/getProduct/{product_id}", response_model=Product, status_code=200, tags=TAG_PRODUCTS, description="Get a specific producs list by id.")
-async def getProduct(product_id: int):
+@app.get("/getByID/{product_id}", response_model=Product, status_code=200, tags=TAG_PRODUCTS, description="Get a specific producs list by id.")
+async def getByID(product_id: int):
     try:
         LOG_SYS.write(TAG, f"Getting specific product by id: {product_id}.")
-        products = await get_product(product_id)
+        products = await get_product_by_id(product_id)
         return products
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -279,7 +280,6 @@ async def getProduct(product_id: int):
     except Exception as e:
         LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get a specific products list by category.")
 async def getByCategory(category: str):
@@ -386,26 +386,43 @@ async def about():
 
 ###################################################################################################
 
+STARTUP_TAG = "STARTUP"
+
 def welcome_message():
-    LOG_SYS.write(TAG, "__          _________ ______           _          ")   
-    LOG_SYS.write(TAG, "\ \        / /__   __|  ____|         | |         ")
-    LOG_SYS.write(TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
-    LOG_SYS.write(TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
-    LOG_SYS.write(TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
-    LOG_SYS.write(TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
+    LOG_SYS.write(STARTUP_TAG, "__          _________ ______           _          ")   
+    LOG_SYS.write(STARTUP_TAG, "\ \        / /__   __|  ____|         | |         ")
+    LOG_SYS.write(STARTUP_TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
+    LOG_SYS.write(STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
+    LOG_SYS.write(STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
+    LOG_SYS.write(STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
 
 
-def shutdown():
+SHUTDOWN_TAG = "SHUTDOWN"
+
+def shutdown(signum, frame):
     try:
-        LOG_SYS.write(TAG, "Closing Database MongDB connection.")
+        LOG_SYS.write(SHUTDOWN_TAG, "Closing Database MongoDB connection.")
         close_connection()
-        LOG_SYS.write(TAG, "Shutdown FastAPI server.")
-        os.kill(os.getpid(), 9)
-    except Exception as e:  
-        LOG_SYS.write(TAG, f"An error occured with Exception: {e}")
-
+        LOG_SYS.write(SHUTDOWN_TAG, "Shutdown FastAPI server.")
+        sys.exit(0)
+    except Exception as e:
+        LOG_SYS.write(SHUTDOWN_TAG, f"An error occurred with Exception: {e}")
+        sys.exit(1)
 
 if __name__ == '__main__':
+    # Call Signal Registration
+    signal.signal(signal.SIGINT, shutdown)  # Ctrl+C
+    signal.signal(signal.SIGTERM, shutdown) # kill
+    signal.signal(signal.SIGHUP, shutdown)  # Terminal closed
+    signal.signal(signal.SIGQUIT, shutdown) # Quit signal
+    signal.signal(signal.SIGABRT, shutdown) # Abort signal
+    signal.signal(signal.SIGUSR1, shutdown) # User-defined signal 1
+    signal.signal(signal.SIGUSR2, shutdown) # User-defined signal 2
+
     welcome_message()
+    
+    # Connect to MongoDB
     connect(host="localhost", port=27017, db_name="WTFunko")
+    
+    # Start Uvicorn App
     uvicorn.run(app, host="localhost", port=8000)
