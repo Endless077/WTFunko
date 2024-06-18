@@ -138,7 +138,7 @@ async def delete_existing_user(username: str):
 async def updateUser(username: str, user: User):
     try:
         LOG_SYS.write(TAG, f"Update existing user information with username: {username}.")
-        result = await update_user(user)
+        result = await update_user(username, user)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -212,7 +212,7 @@ app.put("/updateOrder", status_code=200, tags=TAG_ORDERS, description="Update a 
 async def updateOrder(order_id: str, order: Order):
     try:
         LOG_SYS.write(TAG, f"Update existing order information with id: {order_id}.")
-        result = await update_order(order)
+        result = await update_order(order_id, order)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")
@@ -239,8 +239,9 @@ async def getAllProducts():
         raise HTTPException(status_code=500, detail=str(e))
     
 
+#TODO: usare ProductFilter Model per avere un accesso più ordinato
 @app.get("/getProductsFromPage", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS, description="Get products from a category from a page.")
-async def getProductsFromPage(category: str, searchTerm:str, pageIndex: int):
+async def getProductsFromPage(category: str, searchTerm: str, pageIndex: int):
     try:
         LOG_SYS.write(TAG, f"Getting products from page...")
         products = await get_products_from_page(category, searchTerm, pageIndex)
@@ -254,7 +255,7 @@ async def getProductsFromPage(category: str, searchTerm:str, pageIndex: int):
     
 
 @app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS, description="Get the amount of unique products for a specific category.")
-async def getUniqueProductsCount(category:str, searchTerm:str):
+async def getUniqueProductsCount(category: str, searchTerm: str):
     try:
         count = await get_unique_products_count(category, searchTerm)
         return count
@@ -368,7 +369,7 @@ async def deleteProduct(product_id: str):
 async def updateProduct(product_id: str, product: Product):
     try:
         LOG_SYS.write(TAG, f"Update existing product information with id: {product_id}.")
-        result = await update_product(product)
+        result = await update_product(product_id, product)
         return {"message": result}
     except HTTPException as e:
         LOG_SYS.write(TAG, f"An HTTP error occured with Exception: {e}")

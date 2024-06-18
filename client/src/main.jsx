@@ -28,7 +28,7 @@ const routes = [
   { path: "/productInfo/:id", element: <ProductInfo /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
-  { path: "/userInfo", element: <UserInfo /> },
+  { path: "/profile", element: <UserInfo /> },
 ];
 
 // Startup React Project

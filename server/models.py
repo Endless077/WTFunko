@@ -14,7 +14,7 @@ class OrderUser(BaseModel):
     username: str = Field(..., description="Username of the user in an order")
     email: str = Field(..., description="Email address of the user in an order")
 
-
+ 
 class Product(BaseModel):
     id: Optional[int] = Field(-1, alias='_id', description="Unique identifier for the product")
     title: str = Field(..., description="Title of the product")
@@ -30,6 +30,12 @@ class Product(BaseModel):
     related: List[int] = Field(..., description="List of related product IDs")
     description: str = Field(..., description="Description of the product")
     img: str = Field(..., description="Image URL of the product")
+
+
+class ProductFilter(BaseModel):
+    category: Optional[str] = Field("All", description="Category to Filter.")
+    searchTerm: Optional[str] = Field("", description="Search Term to Filter.")
+    pageIndex: Optional[int] = Field(0, description="Index of the page to view.")
 
 
 class Order(BaseModel):

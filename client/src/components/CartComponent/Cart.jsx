@@ -1,7 +1,8 @@
 import { Navbar } from "../Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import RemoveConfirm from "./RemoveConfirmComponent/RemoveConfirm";
+import Swal from "sweetalert2";
 import "./Cart.css";
 
 const CartPage = () => {
@@ -10,6 +11,8 @@ const CartPage = () => {
   const [cart, setCart] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [productToRemove, setProductToRemove] = useState(null);
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -43,6 +46,12 @@ const CartPage = () => {
     handleCloseModal();
   };
 
+  const handleConfirmRemoval = () => {
+    if (productToRemove !== null) {
+      removeFromCart(productToRemove);
+    }
+  };
+
   const handleShowModal = (productId) => {
     setProductToRemove(productId);
     setShowModal(true);
@@ -51,12 +60,6 @@ const CartPage = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setProductToRemove(null);
-  };
-
-  const handleConfirmRemoval = () => {
-    if (productToRemove !== null) {
-      removeFromCart(productToRemove);
-    }
   };
 
   const calculateSubtotal = () => {
@@ -75,7 +78,34 @@ const CartPage = () => {
   };
 
   const handlePayment = () => {
-    alert("Payment successful!");
+    if(localStorage.getItem("user") == null) {
+      Swal.fire({
+        icon: "error",
+        title: "Account Needed",
+        text: "You need an account to buy something.",
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        willClose: () => {
+          navigate("/");
+        }
+      });
+    } else {
+      //TODO: avviare ordine, inserire nuovo ordine, aggiornare la quantità.
+      Swal.fire({
+        icon: "success",
+        title: "Payment Done",
+        text: `Thank you for your order!`,
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        willClose: () => {
+          navigate("/profile");
+        },
+      });
+    }
   };
 
   return (

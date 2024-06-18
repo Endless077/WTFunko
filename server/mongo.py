@@ -141,13 +141,13 @@ async def delete_user(username: str) -> str:
     return "User deleted successfully."
 
 
-async def update_user(user_data: User) -> str:
+async def update_user(username: str, user_data: User) -> str:
     # Collection Users
     collection = DATABASE["Users"]
 
     # Update user data in the collection
-    LOG_SYS.write(TAG, f"Updating user data with username: {user_data.username} in the database.")
-    result = collection.update_one({"username": user_data.username}, {"$set": user_data.model_dump()})
+    LOG_SYS.write(TAG, f"Updating user data with username: {username} in the database.")
+    result = collection.update_one({"username": username}, {"$set": user_data.model_dump()})
 
     # Check if user was found and updated
     if result.matched_count == 0:
@@ -187,9 +187,9 @@ async def get_order_info(order_id: str) -> Order:
     # Collection Orders
     collection = DATABASE["Orders"]
 
-    # Query to find order info in the collection by uid
-    LOG_SYS.write(TAG, f"Query to get order info for uid: {order_id} executing.")
-    order_data = collection.find_one({"uid": order_id})
+    # Query to find order info in the collection by _id
+    LOG_SYS.write(TAG, f"Query to get order info for _id: {order_id} executing.")
+    order_data = collection.find_one({"_id": order_id})
 
     # Check if order was found
     if order_data is None:
@@ -208,11 +208,11 @@ async def insert_order(order_data: Order) -> str:
     collection = DATABASE["Orders"]
 
     # Query to find if order already exist
-    existing_order = collection.find_one({"uid": order_data._id})
+    existing_order = collection.find_one({"_id": order_data._id})
 
     # Check if order already exist
     if existing_order:
-        LOG_SYS.write(TAG, f"Insert order with uid: {order_data._id} failed, order already exists.")
+        LOG_SYS.write(TAG, f"Insert order with _id: {order_data._id} failed, order already exists.")
         raise HTTPException(status_code=400, detail="Order already exists")
 
     # Insert one new order data into database
@@ -229,12 +229,12 @@ async def delete_order(order_id: str) -> str:
     collection = DATABASE["Orders"]
 
     # Delete one funcion to update the new order infos
-    LOG_SYS.write(TAG, f"Deleting order data with uid: {order_id} from the database.")
-    result = collection.delete_one({"uid": order_id})
+    LOG_SYS.write(TAG, f"Deleting order data with _id: {order_id} from the database.")
+    result = collection.delete_one({"_id": order_id})
 
     # Check if order was found and deleted
     if result.deleted_count == 0:
-        LOG_SYS.write(TAG, f"Delete existing order with uid: {order_id} failed, order not found.")
+        LOG_SYS.write(TAG, f"Delete existing order with _id: {order_id} failed, order not found.")
         raise HTTPException(status_code=404, detail="Order not found")
 
     # Return success message
@@ -242,17 +242,17 @@ async def delete_order(order_id: str) -> str:
     return "Order deleted successfully."
 
 
-async def update_order(order_data: Order) -> str:
+async def update_order(order_id: str, order_data: Order) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
 
     # Update one funcion to update the new order infos
-    LOG_SYS.write(TAG, f"Updating order data with uid: {order_data._id} in the database.")
-    result = collection.update_one({"uid": order_data._id}, {"$set": order_data.model_dump()})
+    LOG_SYS.write(TAG, f"Updating order data with _id: {order_id} in the database.")
+    result = collection.update_one({"_id": order_id}, {"$set": order_data.model_dump()})
 
     # Check if order was found and updated
     if result.matched_count == 0:
-        LOG_SYS.write(TAG, f"Updating existing order with uid: {order_data._id} failed, order not found.")
+        LOG_SYS.write(TAG, f"Updating existing order with _id: {order_data._id} failed, order not found.")
         raise HTTPException(status_code=404, detail="Order not found")
 
     # Return success message
@@ -440,9 +440,9 @@ async def filter_product(
         LOG_SYS.write(TAG, f"Filtering products by search string '{search_string}'")
         search_results = await get_product_by_search(search_string)
         if products:
-            # Intersect the two lists based on product uid
-            products_uids = {product._id for product in products}
-            products = [product for product in search_results if product._id in products_uids]
+            # Intersect the two lists based on product _id
+            products__ids = {product._id for product in products}
+            products = [product for product in search_results if product._id in products__ids]
         else:
             products = search_results
 
@@ -476,9 +476,9 @@ async def insert_product(product_data: Product) -> str:
     collection = DATABASE["Products"]
 
     # Check if the product already exists
-    existing_product = collection.find_one({"uid": product_data._id})
+    existing_product = collection.find_one({"_id": product_data._id})
     if existing_product:
-        LOG_SYS.write(TAG, f"Insert product with uid: {product_data._id} failed, product already exists.")
+        LOG_SYS.write(TAG, f"Insert product with _id: {product_data._id} failed, product already exists.")
         raise HTTPException(
             status_code=400, detail="Product already exists")
 
@@ -496,12 +496,12 @@ async def delete_product(product_id: str) -> str:
     collection = DATABASE["Products"]
 
     # Delete product data from the collection
-    LOG_SYS.write(TAG, f"Deleting product data with uid: {product_id} from the database.")
-    result = collection.delete_one({"uid": product_id})
+    LOG_SYS.write(TAG, f"Deleting product data with _id: {product_id} from the database.")
+    result = collection.delete_one({"_id": product_id})
 
     # Check if product was found and deleted
     if result.deleted_count == 0:
-        LOG_SYS.write(TAG, f"Delete existing product with uid: {product_id} failed, product not found.")
+        LOG_SYS.write(TAG, f"Delete existing product with _id: {product_id} failed, product not found.")
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Return success message
@@ -509,17 +509,17 @@ async def delete_product(product_id: str) -> str:
     return "Product deleted successfully."
 
 
-async def update_product(product_data: Product) -> str:
+async def update_product(product_id: str, product_data: Product) -> str:
     # Collection Products
     collection = DATABASE["Products"]
 
     # Update product data in the collection
-    LOG_SYS.write(TAG, f"Updating product data with uid: {product_data._id} in the database.")
-    result = collection.update_one({"uid": product_data._id}, {"$set": product_data.model_dump()})
+    LOG_SYS.write(TAG, f"Updating product data with _id: {product_id} in the datbase.")
+    result = collection.update_one({"_id": product_id}, {"$set": product_data.model_dump()})
 
     # Check if product was found and updated
     if result.matched_count == 0:
-        LOG_SYS.write(TAG, f"Updating existing product with uid: {product_data._id} failed, product not found.")
+        LOG_SYS.write(TAG, f"Updating existing product with _id: {product_data._id} failed, product not found.")
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Return success message
