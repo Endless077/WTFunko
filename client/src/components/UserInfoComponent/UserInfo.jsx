@@ -1,9 +1,12 @@
+// UserInfo
 import React, { useState, useEffect } from "react";
-import "./UserInfo.css";
 import { Navbar } from "../Navbar";
-import { Link, useNavigate } from "react-router-dom";
-import { confirmAlert } from "react-confirm-alert"; // Importa il pacchetto
-import "react-confirm-alert/src/react-confirm-alert.css"; // Importa lo stile CSS
+import { useNavigate } from "react-router-dom";
+
+// Utils
+import "./UserInfo.css";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 // Dati fasulli per esempio
 const fakeUserData = {
@@ -45,6 +48,8 @@ const UserInfo = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
+
+  /* ********************************************************************************************* */
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -89,6 +94,8 @@ const UserInfo = () => {
       ],
     });
   };
+
+  /* ********************************************************************************************* */
 
   return (
     <>

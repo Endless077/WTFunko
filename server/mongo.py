@@ -289,7 +289,7 @@ async def update_order(order_id: str, order_data: Order) -> str:
 async def get_unique_products_count(category: str, searchTerm: str) -> int:
     # Collection Products
     products = DATABASE["Products"]
-    
+
     # Getting cutom filter and count occurrence
     filter = getCombinedFilter(category, searchTerm)
     count = products.count_documents(filter)
@@ -299,12 +299,12 @@ async def get_unique_products_count(category: str, searchTerm: str) -> int:
 async def get_products(category: str, searchTerm: str, criteria: Criteria, pageIndex: int) -> List[Product]:
     # Collection Products
     products = DATABASE["Products"]
-    
+
     # Get a filter and sorting rule
     LOG_SYS.write(TAG, "Creating a combined custom filter and sorter.")
     filter = getCombinedFilter(category, searchTerm)
     sort = getCriteriaSorting(criteria)
-    
+
     # Setup max page and range index
     count = await get_unique_products_count(category, searchTerm)
     if count == 0:
@@ -342,7 +342,7 @@ def getCombinedFilter(category: str, searchTerm: str) -> dict:
             {"description": {"$regex": searchTerm, "$options": "i"}}
         ]
     }
-    
+
     combined_filters = {"$and": [category_filter, search_filter]}
     return combined_filters
 
@@ -401,6 +401,33 @@ async def get_products_by_category(category: str) -> List[Product]:
     # Return the list of products
     LOG_SYS.write(
         TAG, f"Found {len(products)} products for category '{category}'.")
+    return products
+
+
+async def get_product_by_product_type(product_type: str) -> List[Product]:
+    # Collection Products
+    collection = DATABASE["Products"]
+
+    # Query to find products by search string in the title
+    LOG_SYS.write(
+        TAG, f"Query to get products by search string '{product_type}' executing.")
+    product_data = list(collection.find(
+        {"product_type": {"$regex": f".*{product_type}.*", "$options": "i"}}))
+
+    # Check if Products were found
+    if not product_data:
+        LOG_SYS.write(
+            TAG, f"No Products found for product type: '{product_type}'."
+        )
+        return []
+
+    # Build a list of instances of Product using the data retrieved from the database
+    products = [Product(**product) for product in product_data]
+
+    # Return the list of products
+    LOG_SYS.write(
+        TAG, f"Found {len(products)} products for product type '{product_type}'."
+    )
     return products
 
 

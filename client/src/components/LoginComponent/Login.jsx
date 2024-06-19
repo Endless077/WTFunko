@@ -20,11 +20,57 @@ const Login = () => {
   /* ********************************************************************************************* */
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    const loginRequest = async () => {
+      try {
+        const endpointUrl = config.endpoints.login.url;
+        const method = config.endpoints.login.method;
+        const payload = { username, email: username, password };
+
+        const loginResponse = await fetchData(
+          endpointUrl,
+          method,
+          undefined,
+          undefined,
+          payload
+        );
+
+        if (!loginResponse.ok) {
+          throw new Error(
+            loginResponse.detail || "Login failed. Please try again later."
+          );
+        }
+
+        const loginResponseData = loginResponse.json();
+
+        Swal.fire({
+          icon: "success",
+          title: "Login Successful",
+          text: `Welcome ${username}`,
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          willClose: () => {
+            navigate("/");
+          },
+        });
+
+        return loginResponseData;
+      } catch (error) {
+        console.error("Error signup attempt:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error during signup attempt",
+          text: error.message,
+        });
+      }
+    };
 
     try {
+      e.preventDefault();
+      setLoading(true);
+      setError("");
+
       if (username.length < 4 || username.length > 20) {
         throw new Error("Username must be between 4 and 20 characters.");
       } else if (!validatePassword(password)) {
@@ -33,36 +79,10 @@ const Login = () => {
         );
       }
 
-      const user = { username, email: username, password };
-
-      const response = await fetch(getApiUrl(config.endpoints.login.url), {
-        method: config.endpoints.login.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Login failed. Please try again later.");
-      }
-
-      localStorage.setItem("user", JSON.stringify(data));
-
-      Swal.fire({
-        icon: "success",
-        title: "Login Successful",
-        text: `Welcome ${data.username}`,
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        allowOutsideClick: false,
-        willClose: () => {
-          navigate("/");
-        },
-      });
+      const user = await loginRequest();
+      localStorage.setItem("user", JSON.stringify(user));
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error during registration:", error);
       setError(error.message);
 
       Swal.fire({

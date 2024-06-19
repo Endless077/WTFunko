@@ -323,30 +323,6 @@ export const Products = () => {
               </button>
               <button
                 className={`btn btn-outline-dark me-2 ${
-                  currentCategory === "Disney" ? "active" : ""
-                }`}
-                onClick={() => handlePageChange("Disney")}
-              >
-                Disney
-              </button>
-              <button
-                className={`btn btn-outline-dark me-2 ${
-                  currentCategory === "Sports" ? "active" : ""
-                }`}
-                onClick={() => handlePageChange("Sports")}
-              >
-                Sports
-              </button>
-              <button
-                className={`btn btn-outline-dark me-2 ${
-                  currentCategory === "Marvel" ? "active" : ""
-                }`}
-                onClick={() => handlePageChange("Marvel")}
-              >
-                Marvel
-              </button>
-              <button
-                className={`btn btn-outline-dark me-2 ${
                   currentCategory === "Anime" ? "active" : ""
                 }`}
                 onClick={() => handlePageChange("Anime")}
@@ -355,19 +331,11 @@ export const Products = () => {
               </button>
               <button
                 className={`btn btn-outline-dark me-2 ${
-                  currentCategory === "Star Wars" ? "active" : ""
+                  currentCategory === "Disney" ? "active" : ""
                 }`}
-                onClick={() => handlePageChange("Star Wars")}
+                onClick={() => handlePageChange("Disney")}
               >
-                Star Wars
-              </button>
-              <button
-                className={`btn btn-outline-dark me-2 ${
-                  currentCategory === "Pixar" ? "active" : ""
-                }`}
-                onClick={() => handlePageChange("Pixar")}
-              >
-                Pixar
+                Disney
               </button>
               <button
                 className={`btn btn-outline-dark me-2 ${
@@ -379,11 +347,11 @@ export const Products = () => {
               </button>
               <button
                 className={`btn btn-outline-dark me-2 ${
-                  currentCategory === "Pokémon" ? "active" : ""
+                  currentCategory === "Marvel" ? "active" : ""
                 }`}
-                onClick={() => handlePageChange("Pokémon")}
+                onClick={() => handlePageChange("Marvel")}
               >
-                Pokémon
+                Marvel
               </button>
               <button
                 className={`btn btn-outline-dark me-2 ${
@@ -392,6 +360,38 @@ export const Products = () => {
                 onClick={() => handlePageChange("Music")}
               >
                 Music
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  currentCategory === "Pixar" ? "active" : ""
+                }`}
+                onClick={() => handlePageChange("Pixar")}
+              >
+                Pixar
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  currentCategory === "Pokémon" ? "active" : ""
+                }`}
+                onClick={() => handlePageChange("Pokémon")}
+              >
+                Pokémon
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  currentCategory === "Sports" ? "active" : ""
+                }`}
+                onClick={() => handlePageChange("Sports")}
+              >
+                Sports
+              </button>
+              <button
+                className={`btn btn-outline-dark me-2 ${
+                  currentCategory === "Star Wars" ? "active" : ""
+                }`}
+                onClick={() => handlePageChange("Star Wars")}
+              >
+                Star Wars
               </button>
               <button
                 className={`btn btn-outline-dark me-2 ${

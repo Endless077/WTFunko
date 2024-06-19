@@ -27,16 +27,17 @@ const Register = () => {
         const method = config.endpoints.signup.method;
         const payload = { username, email, password };
 
-        const signupResponseData = await fetchData(
+        const signupResponse = await fetchData(
           endpointUrl,
           method,
-          null,
+          undefined,
+          undefined,
           payload
         );
 
-        if (!signupResponseData.ok) {
+        if (!signupResponse.ok) {
           throw new Error(
-            signupResponseData.detail ||
+            signupResponse.detail ||
               "Registration failed. Please try again later."
           );
         }
@@ -85,12 +86,6 @@ const Register = () => {
     } catch (error) {
       console.error("Error during registration:", error);
       setError(error.message);
-
-      Swal.fire({
-        icon: "error",
-        title: "Registration Error",
-        text: error.message,
-      });
     } finally {
       setLoading(false);
     }

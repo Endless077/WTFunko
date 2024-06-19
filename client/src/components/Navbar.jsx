@@ -1,5 +1,8 @@
+// Navbar Component
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+// Utils
 import "./Navbar.css";
 
 export const Navbar = () => {
@@ -8,12 +11,14 @@ export const Navbar = () => {
 
   const navigate = useNavigate();
 
+  /* ********************************************************************************************* */
+
   useEffect(() => {
     const user = localStorage.getItem("user");
-    if (user) {
-      const { username } = JSON.parse(user);
+    if (!!user) {
+      const userParse = JSON.parse(user);
       setIsLoggedIn(true);
-      setUsername(username);
+      setUsername(userParse.username);
     }
   }, []);
 
@@ -24,6 +29,8 @@ export const Navbar = () => {
     setUsername("");
     navigate("/");
   };
+
+  /* ********************************************************************************************* */
 
   return (
     <>

@@ -1,9 +1,13 @@
+// Cart Component
+import React, { useState, useEffect } from "react";
 import { Navbar } from "../Navbar";
-import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { Link, useNavigate } from "react-router-dom";
+
+// Utils
 import { config, getApiUrl } from "../../utils";
 import "./Cart.css";
+
 const CartPage = () => {
   const VAT_RATE = 0.22;
   const SHIPPING_COST = 5.0;
@@ -11,25 +15,26 @@ const CartPage = () => {
 
   const navigate = useNavigate();
 
+  /* ********************************************************************************************* */
+
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(storedCart);
   }, []);
-  
+
   const updateQuantity = (productId, newQuantity) => {
     newQuantity = Math.max(newQuantity, 1);
-  
+
     const updatedCart = cart.map((item) => {
       if (item._id === productId) {
         return { ...item, cartQuantity: newQuantity };
       }
       return item;
     });
-  
+
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
-  
 
   const removeFromCart = (productId) => {
     Swal.fire({
@@ -104,67 +109,73 @@ const CartPage = () => {
   };
 
   const handlePayment = () => {
-    const currentUser = localStorage.getItem("user");
-    if (currentUser == null) {
-      Swal.fire({
-        icon: "error",
-        title: "Account Needed",
-        text: "You need an account to buy something.",
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        allowOutsideClick: false,
-        willClose: () => {
-          navigate("/");
-        },
-      });
-    } else {
-      const newOrder = makeOrder(currentUser, cart);
+    const sendOrder = async (newOrder) => {
+      try {
+        const endpointUrl = config.endpoints.insertOrder.url;
+        const method = config.endpoints.insertOrder.method;
+        const payload = newOrder
 
-      const sendOrder = async (newOrder) => {
-        try {
-          const insertNewOrderFetchUrl = getApiUrl(
-            config.endpoints.insertOrder.url
+        const insertOrderResponse = await fetchData(
+          endpointUrl,
+          method,
+          null,
+          payload
+        );
+
+        if (!insertOrderResponse.ok) {
+          throw new Error(
+            insertOrderResponse.detail ||
+              "Order failed. Please try again later."
           );
-
-          const insertNewOrderFetch = await fetch(insertNewOrderFetchUrl, {
-            method: config.endpoints.insertOrder.method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newOrder),
-          });
-
-          const data = await insertNewOrderFetch.json();
-          if (!insertNewOrderFetch.ok) {
-            throw new Error(
-              data.detail || "Order failed. Please try again later."
-            );
-          }
-
-          Swal.fire({
-            icon: "success",
-            title: "Payment Done",
-            text: `Thank you for your order!`,
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            willClose: () => {
-              navigate("/profile");
-            },
-          });
-        } catch (error) {
-          console.error("Error creating current order:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Order Error",
-            text: error.detail,
-          });
         }
-      };
 
-      sendOrder(newOrder);
+        Swal.fire({
+          icon: "success",
+          title: "Payment Done",
+          text: `Thank you for your order!`,
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          willClose: () => {
+            navigate("/profile");
+          },
+        });
+      } catch (error) {
+        console.error("Error creating current order:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Order Error",
+          text: error.detail,
+        });
+      }
+    };
+
+    try {
+      const currentUser = localStorage.getItem("user");
+      if (currentUser == null) {
+        Swal.fire({
+          icon: "error",
+          title: "Account Needed",
+          text: "You need an account to buy something.",
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          willClose: () => {
+            navigate("/");
+          },
+        });
+      } else {
+        const newOrder = makeOrder(currentUser, cart);
+        sendOrder(newOrder);
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
   };
+
+  /* ********************************************************************************************* */
 
   return (
     <>

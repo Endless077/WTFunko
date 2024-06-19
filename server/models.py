@@ -9,7 +9,7 @@ class User(BaseModel):
     password: str = Field(..., description="Password of the user")
 
 
-class OrderUser(BaseModel):
+class UserInfo(BaseModel):
     id: Optional[int] = Field(-1, alias='_id', description="Unique identifier for the user in an order")
     username: str = Field(..., description="Username of the user in an order")
     email: str = Field(..., description="Email address of the user in an order")
@@ -40,17 +40,11 @@ class OrderPorduct(BaseModel):
     amount: int = Field(..., description="Amount of product purchased")
     interest: List[str] = Field(..., description="List of interests associated with the product")
     img: str = Field(..., description="Image URL of the product")
-    
-    
-class ProductFilter(BaseModel):
-    category: Optional[str] = Field("All", description="Category to Filter.")
-    searchTerm: Optional[str] = Field("", description="Search Term to Filter.")
-    pageIndex: Optional[int] = Field(0, description="Index of the page to view.")
 
 
 class Order(BaseModel):
     id: Optional[int] = Field(-1, alias='_id', description="Unique identifier for the order")
-    user: OrderUser = Field(..., description="User associated with the order")
+    user: UserInfo = Field(..., description="User associated with the order")
     products: List[OrderPorduct] = Field(..., description="List of products and their quantities in the order")
     total: float = Field(..., description="Total price of the order")
     date: str = Field(..., description="Date of the order")

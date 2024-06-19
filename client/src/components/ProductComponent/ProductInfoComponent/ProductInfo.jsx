@@ -1,25 +1,58 @@
+// ProductInfo Component
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Navbar } from "../../Navbar";
+import { useParams } from "react-router-dom";
+
+// Utils
 import "./ProductInfo.css";
+import { config, fetchData } from "../../../utils";
 
 const ProductInfo = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [cart, setCart] = useState([]);
 
+  /* ********************************************************************************************* */
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/getByID/${id}`);
-        const data = await response.json();
-        setProduct(data);
+        const endpointUrl = config.endpoints.getByID.url;
+        const method = config.endpoints.getByID.method;
+        const pathParams = {
+          product_id: id,
+        };
+
+        const getProductResponse = await fetchData(
+          endpointUrl,
+          method,
+          undefined,
+          pathParams
+        );
+
+        if (!getProductResponse.ok) {
+          throw new Error(
+            getProductResponse.detail || "Login failed. Please try again later."
+          );
+        }
+
+        const getProductData = await getProductResponse.json();
+        setProduct(getProductData);
       } catch (error) {
-        console.error("Error fetching product:", error);
+        console.error("Error product fetch:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error during product loading",
+          text: error.message,
+        });
       }
     };
 
-    fetchProduct();
+    try {
+      fetchProduct();
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    }
   }, [id]);
 
   useEffect(() => {
@@ -56,6 +89,8 @@ const ProductInfo = () => {
   if (!product) {
     return <div>Loading...</div>;
   }
+
+  /* ********************************************************************************************* */
 
   return (
     <>

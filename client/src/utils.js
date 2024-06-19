@@ -2,12 +2,22 @@
 export const getApiUrl = (endpoint) =>
   `http://${config.api_url}:${config.api_port}${endpoint}`;
 
+// Utility function to replace params URL
+export function replaceUrlParams(url, params) {
+  Object.keys(params).forEach(key => {
+    url = url.replace(`{${key}}`, encodeURIComponent(params[key]));
+  });
+  return url;
+}
 
 // Utility function to fetch data via API
-export async function fetchData(endpoint, method = 'GET', queryParams = {}, payload = null) {
+export async function fetchData(endpoint, method = 'GET', queryParams = {}, pathParams = {}, payload = null) {
   try {
+    // Replace placeholders in the endpoint with actual path parameters
+    let replacedEndpoint = replaceUrlParams(endpoint, pathParams);
+
     // Construct the base URL using the URL object
-    const baseUrl = new URL(getApiUrl(endpoint));
+    const baseUrl = new URL(getApiUrl(replacedEndpoint));
 
     // If the method is GET or DELETE, append the query parameters to the URL
     if (method === 'GET' || method === 'DELETE') {
@@ -31,7 +41,7 @@ export async function fetchData(endpoint, method = 'GET', queryParams = {}, payl
     // Fetch data using the constructed URL and fetch options
     const response = await fetch(baseUrl.toString(), fetchOptions);
 
-    return response
+    return response;
     
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -68,6 +78,7 @@ export const config = {
     getAllProducts: { url: "/getAllProducts", method: "GET" },
     getByID: { url: "/getByID/{product_id}", method: "GET" },
     getByCategory: { url: "/getByCategory/{category}", method: "GET" },
+    getByProductType: { url: "/getByProductType/{product_type)", method: "GET" },
     getBySearch: { url: "/getBySearch/{search_string}", method: "GET" },
     sortingBy: { url: "/sortingBy/{criteria}", method: "GET" },
     getFilter: { url: "/getFilter", method: "GET" },
