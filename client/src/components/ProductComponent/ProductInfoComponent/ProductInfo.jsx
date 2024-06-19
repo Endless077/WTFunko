@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 
 // Utils
 import "./ProductInfo.css";
+import Swal from "sweetalert2";
 import { config, fetchData } from "../../../utils";
 
 const ProductInfo = () => {
@@ -32,7 +33,8 @@ const ProductInfo = () => {
 
         if (!getProductResponse.ok) {
           throw new Error(
-            getProductResponse.detail || "Login failed. Please try again later."
+            getProductResponse.detail ||
+              "Product loading failed. Please try again later."
           );
         }
 
@@ -63,24 +65,56 @@ const ProductInfo = () => {
     fetchCart();
   }, []);
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity = 1) => {
     let updatedCart;
     const existingProductIndex = cart.findIndex(
-      (item) => item.id === product.id
+      (item) => item._id === product._id
     );
     if (existingProductIndex !== -1) {
       updatedCart = [...cart];
-      updatedCart[existingProductIndex].quantity += 1;
+      const newQuantity =
+        updatedCart[existingProductIndex].cartQuantity + quantity;
+      if (newQuantity > product.quantity) {
+        Swal.fire({
+          icon: "warning",
+          title: "Maximum Reached",
+          text: `You can add up to a maximum of ${product.quantity} units.`,
+        });
+
+        updatedCart[existingProductIndex].cartQuantity = product.quantity;
+      } else {
+        updatedCart[existingProductIndex].cartQuantity = newQuantity;
+      }
     } else {
-      updatedCart = [...cart, { ...product, quantity: 1 }];
+      if (quantity > product.quantity) {
+        Swal.fire({
+          icon: "warning",
+          title: "Oh no...this is too much for us",
+          text: `You reached the in stock limit (${maxQuantity}) for this product.`,
+        });
+        updatedCart = [...cart, { ...product, cartQuantity: product.quantity }];
+      } else {
+        updatedCart = [...cart, { ...product, cartQuantity: quantity }];
+      }
     }
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
-  const handleQuantityChange = (productId, quantity) => {
+  const handleQuantityChange = (productId, cartQuantity, maxQuantity) => {
+    if (cartQuantity > maxQuantity) {
+      Swal.fire({
+        icon: "warning",
+        title: "Oh no...this is too much for us",
+        text: `You reached the in stock limit (${maxQuantity}) for this product.`,
+      });
+      cartQuantity = maxQuantity;
+    } else if (cartQuantity < 1) {
+      cartQuantity = 1;
+    }
+
     const updatedCart = cart.map((item) =>
-      item.id === productId ? { ...item, quantity } : item
+      item._id === productId ? { ...item, cartQuantity } : item
     );
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
@@ -115,35 +149,42 @@ const ProductInfo = () => {
             <h1 className="display-5">{product.title}</h1>
             <p className="lead">{product.description}</p>
             <h3 className="my-4">${product.price}</h3>
-            {cart.some((item) => item.id === product.id) ? (
-              <div>
+            {product.quantity > 0 ? (
+              cart.some((item) => item._id === product._id) ? (
+                <div>
+                  <button
+                    className="btn btn-dark btn-block mb-2"
+                    onClick={() => addToCart(product, 1)}
+                  >
+                    In Cart
+                  </button>
+                  <input
+                    type="number"
+                    className="form-control mb-2"
+                    value={
+                      cart.find((item) => item._id === product._id).cartQuantity
+                    }
+                    min="1"
+                    max={product.quantity}
+                    onChange={(e) =>
+                      handleQuantityChange(
+                        product._id,
+                        +e.target.value,
+                        product.quantity
+                      )
+                    }
+                  />
+                </div>
+              ) : (
                 <button
-                  className="btn btn-dark btn-block mb-2"
+                  className="btn btn-outline-dark btn-block mb-2"
                   onClick={() => addToCart(product, 1)}
                 >
-                  In Cart
+                  Add to Cart
                 </button>
-                <select
-                  className="form-select mb-2"
-                  value={cart.find((item) => item.id === product.id).quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(product.id, +e.target.value)
-                  }
-                >
-                  {[...Array(10).keys()].map((number) => (
-                    <option key={number + 1} value={number + 1}>
-                      {number + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              )
             ) : (
-              <button
-                className="btn btn-outline-dark btn-block mb-2"
-                onClick={() => addToCart(product, 1)}
-              >
-                Add to Cart
-              </button>
+              <p className="text-danger fw-bold mb-0">Out of Stock</p>
             )}
           </div>
         </div>

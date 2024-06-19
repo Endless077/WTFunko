@@ -1,18 +1,19 @@
 // Cart Component
 import React, { useState, useEffect } from "react";
 import { Navbar } from "../Navbar";
-import Swal from "sweetalert2";
 import { Link, useNavigate } from "react-router-dom";
 
 // Utils
-import { config, getApiUrl } from "../../utils";
 import "./Cart.css";
+import Swal from "sweetalert2";
+import { config, fetchData } from "../../utils";
 
 const CartPage = () => {
   const VAT_RATE = 0.22;
-  const SHIPPING_COST = 5.0;
-  const [cart, setCart] = useState([]);
+  const SHIPPING_COST = 6.99;
+  const FREE_SHIPPING_THRESHOLD = 100;
 
+  const [cart, setCart] = useState([]);
   const navigate = useNavigate();
 
   /* ********************************************************************************************* */
@@ -23,10 +24,19 @@ const CartPage = () => {
   }, []);
 
   const updateQuantity = (productId, newQuantity) => {
-    newQuantity = Math.max(newQuantity, 1);
-
     const updatedCart = cart.map((item) => {
       if (item._id === productId) {
+        const maxQuantity = item.quantity;
+        if (newQuantity > maxQuantity) {
+          Swal.fire({
+            icon: "warning",
+            title: "Oh no...this is too much for us",
+            text: `You reached the in stock limit (${maxQuantity}) for this product.`,
+          });
+          newQuantity = maxQuantity;
+        } else if (newQuantity < 1) {
+          newQuantity = 1;
+        }
         return { ...item, cartQuantity: newQuantity };
       }
       return item;
@@ -34,6 +44,24 @@ const CartPage = () => {
 
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  const clearCart = () => {
+    Swal.fire({
+      title: "Clear Cart",
+      text: "Are you sure you want to remove all items from your cart?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, clear it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setCart([]);
+        localStorage.removeItem("cart");
+        Swal.fire("Cleared!", "Your cart has been cleared.", "success");
+      }
+    });
   };
 
   const removeFromCart = (productId) => {
@@ -69,8 +97,9 @@ const CartPage = () => {
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
     const vat = calculateVat();
-    const total = subtotal + vat + SHIPPING_COST;
-    return total.toFixed(2);
+
+    const total = parseFloat((subtotal + vat + SHIPPING_COST).toFixed(2));
+    return total;
   };
 
   const makeOrder = (user, products) => {
@@ -88,10 +117,7 @@ const CartPage = () => {
       },
     }));
 
-    const total = products.reduce(
-      (sum, product) => sum + product.price * product.cartQuantity,
-      0
-    );
+    const total = calculateTotal();
 
     const newOrder = {
       user: {
@@ -113,7 +139,7 @@ const CartPage = () => {
       try {
         const endpointUrl = config.endpoints.insertOrder.url;
         const method = config.endpoints.insertOrder.method;
-        const payload = newOrder
+        const payload = newOrder;
 
         const insertOrderResponse = await fetchData(
           endpointUrl,
@@ -138,7 +164,7 @@ const CartPage = () => {
           showConfirmButton: false,
           allowOutsideClick: false,
           willClose: () => {
-            navigate("/profile");
+            navigate("/login");
           },
         });
       } catch (error) {
@@ -182,6 +208,7 @@ const CartPage = () => {
       <Navbar />
       <div className="container mt-5">
         <h2>Shopping Cart</h2>
+        <h6>(for orders over $100 free shipping)</h6>
         {cart.length === 0 ? (
           <p>Your cart is empty.</p>
         ) : (
@@ -214,18 +241,20 @@ const CartPage = () => {
                     <td>{item.title}</td>
                     <td>${item.price.toFixed(2)}</td>
                     <td>
-                      <div className="d-flex align-items-center">
+                      <div className="cart-quantity-control">
                         <button
-                          className="btn btn-sm btn-primary me-2"
+                          className="btn btn-sm btn-primary"
                           onClick={() =>
                             updateQuantity(item._id, item.cartQuantity - 1)
                           }
                         >
                           -
                         </button>
-                        <span>{item.cartQuantity}</span>
+                        <span className="cart-quantity">
+                          {item.cartQuantity}
+                        </span>
                         <button
-                          className="btn btn-sm btn-primary ms-2"
+                          className="btn btn-sm btn-primary"
                           onClick={() =>
                             updateQuantity(item._id, item.cartQuantity + 1)
                           }
@@ -247,44 +276,53 @@ const CartPage = () => {
                 ))}
               </tbody>
             </table>
+            <button className="btn btn-danger mt-3" onClick={clearCart}>
+              Clear Cart
+            </button>
             <div className="cart-container mt-5">
               <table className="cart-table">
                 <tfoot>
                   <tr>
-                    <td colSpan="4" className="text-end">
-                      {" "}
+                    <td colSpan="4" className="text-end fw-bold">
                       Subtotal:
                     </td>
                     <td>${calculateSubtotal().toFixed(2)}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end">
-                      {" "}
+                    <td colSpan="4" className="text-end fw-bold">
                       VAT (22%):
                     </td>
                     <td>${calculateVat().toFixed(2)}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end">
-                      {" "}
+                    <td colSpan="4" className="text-end fw-bold">
                       Shipping Cost:
                     </td>
-                    <td>${SHIPPING_COST.toFixed(2)}</td>
+                    <td>
+                      {calculateSubtotal() > FREE_SHIPPING_THRESHOLD ? (
+                        <span
+                          className="text-success"
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          Free Shipping
+                        </span>
+                      ) : (
+                        `$${SHIPPING_COST.toFixed(2)}`
+                      )}
+                    </td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end">
-                      {" "}
+                    <td colSpan="4" className="text-end fw-bold">
                       Total:
                     </td>
                     <td>${calculateTotal()}</td>
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="4" className="text-end">
-                      {" "}
+                    <td colSpan="6" className="text-end">
                       <button
                         className="btn btn-success cart-button"
                         onClick={handlePayment}

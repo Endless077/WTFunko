@@ -1,11 +1,11 @@
 // Signup Component
 import React, { useState } from "react";
 import { Navbar } from "../Navbar";
-import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
 // Utils
 import "./Register.css";
+import Swal from "sweetalert2";
 import { config, fetchData } from "../../utils";
 
 const Register = () => {
@@ -71,21 +71,18 @@ const Register = () => {
       setLoading(true);
       setError("");
 
-      if (username.length < 4 || username.length > 20) {
-        throw new Error("Username must be between 4 and 20 characters.");
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        throw new Error("Invalid email format.");
-      } else if (!validatePassword(password)) {
-        throw new Error(
-          "Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long."
-        );
-      }
+      validate(username, email, password)
 
       const newUser = await signupRequest();
       localStorage.setItem("user", JSON.stringify(newUser));
     } catch (error) {
       console.error("Error during registration:", error);
       setError(error.message);
+      Swal.fire({
+        icon: "error",
+        title: "Error during signup attempt",
+        text: error.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -95,10 +92,28 @@ const Register = () => {
     return username === "" || email === "" || password === "" || loading;
   };
 
-  const validatePassword = (password) => {
+  function validate(username, email, password) {
+    if (username.length < 4 || username.length > 20) {
+      throw new Error("Username must be between 4 and 20 characters.");
+    }
+  
+    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    if (!usernameRegex.test(username)) {
+      throw new Error("Username must not contain special characters or spaces.");
+    }
+  
+    const emailRegex = /\S+@\S+\.\S+/
+    if (!emailRegex.test(email)) {
+      throw new Error("Invalid email format.");
+    }
+    
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{6,}$/;
-    return passwordRegex.test(password);
-  };
+    if (!passwordRegex.test(password)) {
+      throw new Error("Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long.");
+    }
+  
+    return true;
+  }
 
   /* ********************************************************************************************* */
 

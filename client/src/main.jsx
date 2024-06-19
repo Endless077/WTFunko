@@ -21,8 +21,6 @@ import Login from "./components/LoginComponent/Login.jsx";
 import Register from "./components/RegisterComponent/Register.jsx";
 import UserInfo from "./components/UserInfoComponent/UserInfo.jsx";
 
-import "./main.css";
-
 /* ********************************************************************************************* */
 
 // Routes

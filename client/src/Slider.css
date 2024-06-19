@@ -1,7 +1,3 @@
-.slider-container {
-  margin: 0 auto;
-}
-
 .f_slider {
   align-items: center;
   display: flex;
@@ -19,4 +15,8 @@
 
 .f_slider img:hover {
   transform: scale(1.1);
+}
+
+.slider-container {
+  margin: 0 auto;
 }
