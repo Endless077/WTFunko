@@ -1,4 +1,7 @@
-/* Slider.css */
+.slider-container {
+  margin: 0 auto;
+}
+
 .f_slider {
   align-items: center;
   display: flex;
@@ -6,23 +9,14 @@
   justify-content: space-between;
 }
 
-.f_slider a {
-  display: inline-block;
-  margin: 0 0px;
-}
-
 .f_slider img {
-  height: auto;
+  height: 200px;
+  width: 300px;
+  max-width: 100%;
   transition: transform 0.3s ease;
-  width: 250px;
+  object-fit: contain;
 }
 
 .f_slider img:hover {
   transform: scale(1.1);
-}
-
-.slider-container {
-  margin: 0 auto;
-  max-width: 1200px;
-  padding: 20px;
 }

@@ -22,11 +22,6 @@ const Slider = () => {
 
   return (
     <div className="slider-container">
-      <div className="col-12 mb-4 text-center">
-        <h1 className="display-6 fw-bolder">
-          Discover your favourite category!
-        </h1>
-      </div>
       <div id="slider">
         <figure className="f_slider">
           <img

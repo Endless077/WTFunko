@@ -34,7 +34,7 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-light py-3 bg-white">
+      <nav className="navbar navbar-expand-lg navbar-light py-3">
         <div className="container">
           <Link className="navbar-brand fw-bold fs-4" to="/">
             <img

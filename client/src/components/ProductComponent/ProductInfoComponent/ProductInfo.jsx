@@ -103,7 +103,9 @@ const ProductInfo = () => {
                 src={product.img}
                 className="card-img-top"
                 alt={product.title}
-                height={400}
+                onError={(e) =>
+                  (e.target.src = "/assets/Funko_Placeholder.png")
+                }
               />
             </div>
           </div>

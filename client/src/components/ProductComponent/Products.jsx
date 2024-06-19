@@ -178,6 +178,9 @@ export const Products = () => {
                       className="card-img-top"
                       alt={product.title}
                       height="250"
+                      onError={(e) =>
+                        (e.target.src = "/assets/Funko_Placeholder.png")
+                      }
                     />
                   </Link>
                   <div className="card-body">
@@ -277,11 +280,8 @@ export const Products = () => {
 
   return (
     <div>
-      <div className="container my-5 py-5">
+      <div className="container my-4">
         <div className="row">
-          <div className="col-12 mb-4 text-center">
-            <h1 className="display-6 fw-bolder">Our selection of Products</h1>
-          </div>
           <div className="col-12 mb-4 d-flex justify-content-center">
             <div className="search-bar">
               <div className="custom-search-bar">
@@ -311,7 +311,6 @@ export const Products = () => {
         </div>
         <div className="row justify-content-center mb-4">
           <div className="category-bar">
-            <label>Categories</label>
             <div className="category-buttons">
               <button
                 className={`btn btn-outline-dark me-2 ${
@@ -403,7 +402,6 @@ export const Products = () => {
               </button>
             </div>
             <div className="sort-options">
-              <label>Sort by:</label>
               <select
                 className="form-select"
                 value={currentSortingCriteria}

@@ -1,0 +1,14 @@
+:root {
+  --gold-color: #ffd60c;
+  --white-color: #fdf8f5;
+  --black-color: #202020;
+}
+
+body {
+  background-color: var(--black-color);
+  color: var(--black-color);
+}
+
+.button {
+  color: var(--white-color);
+}

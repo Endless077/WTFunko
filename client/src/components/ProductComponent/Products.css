@@ -1,6 +1,6 @@
 /* Products.css */
 .category-bar {
-  align-items: flex-start;
+  align-items: center;
   display: flex;
   flex-direction: column;
   margin-right: 20px;
@@ -94,6 +94,11 @@
 .search-bar {
   margin: auto;
   width: 50%;
+}
+
+.sort-options {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .sort-bar {
