@@ -10,7 +10,6 @@ class User(BaseModel):
 
 
 class UserInfo(BaseModel):
-    id: Optional[int] = Field(-1, alias='_id', description="Unique identifier for the user in an order")
     username: str = Field(..., description="Username of the user in an order")
     email: str = Field(..., description="Email address of the user in an order")
 

@@ -42,6 +42,7 @@ export const Products = () => {
           category: currentCategory,
           searchTerm: currentSearchTerm,
         };
+
         const uniqueProductsCountResponse = await fetchData(
           endpointUrl,
           method,
@@ -93,9 +94,7 @@ export const Products = () => {
       }
     };
 
-    if (currentPage !== null) {
-      fetchProducts();
-    }
+   currentPage !== null && fetchProducts();
   }, [currentCategory, currentSearchTerm, currentSortingCriteria, currentPage]);
 
   useEffect(() => {

@@ -111,20 +111,40 @@ async def get_user(username: str, email: str = None) -> User:
     return user
 
 
-async def insert_user(user_data: User) -> str:
+async def insert_user(user_data: User, generate_uid: bool = True) -> str:
     # Collection Users
     collection = DATABASE["Users"]
 
     # Check if the user already exists
-    existing_user = collection.find_one({"username": user_data.username})
-    if existing_user:
+    existing_user_username = collection.find_one({"username": user_data.username})
+    if existing_user_username:
         LOG_SYS.write(
             TAG, f"Insert new user with username: {user_data.username} failed, user already exists.")
         raise HTTPException(status_code=400, detail="User already exists")
 
-    # Insert one new user data into the collection
-    user_data.id = generate_unique_id(length=13, string=False)
+    # Insert user with custom or random UID
+    if not generate_uid:
+        # Check if the user already exists (if true rise exeption)
+        existing_user_id = collection.find_one({"_id": user_data.id})
+        if existing_user_id:
+            LOG_SYS.write(
+                TAG, f"Insert user with id: {user_data.id} failed, user already exists.")
+            raise HTTPException(
+                status_code=400, detail="User already exists")
+    else:
+        while (True):
+            # Generate a UID string for the user
+            user_data.id = generate_unique_id(length=13, string=False)
+            
+            # Check if order already exist
+            existing_user_id = collection.find_one({"_id": user_data.id})
+            if not existing_user_id:
+                break
+            
+    # Hashing the user password in bcrypt hash algorithm
     user_data.password = hash_string(user_data.password)
+    
+    # Insert one new user data into the collection
     result = collection.insert_one(user_data.model_dump(by_alias=True))
 
     # Return success message
@@ -203,9 +223,9 @@ async def get_order_info(order_id: str) -> Order:
     # Collection Orders
     collection = DATABASE["Orders"]
 
-    # Query to find order info in the collection by _id
+    # Query to find order info in the collection byid
     LOG_SYS.write(
-        TAG, f"Query to get order info for _id: {order_id} executing.")
+        TAG, f"Query to get order info forid: {order_id} executing.")
     order_data = collection.find_one({"_id": order_id})
 
     # Check if order was found
@@ -216,27 +236,36 @@ async def get_order_info(order_id: str) -> Order:
     # Build an instance of Order using the data retrieved from the database
     order = Order(**order_data)
 
-    # Return the order infos
+    # Return the order info
     return order
 
 
-async def insert_order(order_data: Order) -> str:
+async def insert_order(order_data: Order, generate_uid: bool = True) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
 
-    # Query to find if order already exist
-    existing_order = collection.find_one({"_id": order_data._id})
-
-    # Check if order already exist
-    if existing_order:
-        LOG_SYS.write(
-            TAG, f"Insert order with _id: {order_data._id} failed, order already exists.")
-        raise HTTPException(status_code=400, detail="Order already exists")
-
+    # Insert order with custom or random UID
+    if not generate_uid:
+        # Check if the order already exists (if true rise exeption)
+        existing_order = collection.find_one({"_id": order_data.id})
+        if existing_order:
+            LOG_SYS.write(
+                TAG, f"Insert order with id: {order_data.id} failed, order already exists.")
+            raise HTTPException(
+                status_code=400, detail="Order already exists")
+    else:
+        while (True):
+            # Generate a UID string for the order
+            order_data.id = generate_unique_id(length=13, string=True)
+            
+            # Check if order already exist (if false break the while)
+            existing_order = collection.find_one({"_id": order_data.id})
+            if not existing_order:
+                break
+        
     # Insert one new order data into database
-    order_data.id = generate_unique_id(length=13, string=True)
     result = collection.insert_one(order_data.model_dump(by_alias=True))
-
+        
     # Return success message
     LOG_SYS.write(TAG, "Order data insert successfully.")
     return "Order inserted successfully."
@@ -246,15 +275,15 @@ async def delete_order(order_id: str) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
 
-    # Delete one funcion to update the new order infos
+    # Delete one funcion to update the new order info
     LOG_SYS.write(
-        TAG, f"Deleting order data with _id: {order_id} from the database.")
+        TAG, f"Deleting order data with id: {order_id} from the database.")
     result = collection.delete_one({"_id": order_id})
 
     # Check if order was found and deleted
     if result.deleted_count == 0:
         LOG_SYS.write(
-            TAG, f"Delete existing order with _id: {order_id} failed, order not found.")
+            TAG, f"Delete existing order with id: {order_id} failed, order not found.")
         raise HTTPException(status_code=404, detail="Order not found")
 
     # Return success message
@@ -266,16 +295,16 @@ async def update_order(order_id: str, order_data: Order) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
 
-    # Update one funcion to update the new order infos
+    # Update one funcion to update the new order info
     LOG_SYS.write(
-        TAG, f"Updating order data with _id: {order_id} in the database.")
+        TAG, f"Updating order data with id: {order_id} in the database.")
     result = collection.update_one(
         {"_id": order_id}, {"$set": order_data.model_dump()})
 
     # Check if order was found and updated
     if result.matched_count == 0:
         LOG_SYS.write(
-            TAG, f"Updating existing order with _id: {order_data._id} failed, order not found.")
+            TAG, f"Updating existing order with id: {order_data.id} failed, order not found.")
         raise HTTPException(status_code=404, detail="Order not found")
 
     # Return success message
@@ -513,15 +542,15 @@ async def filter_product(
             TAG, f"Filtering products by search string '{search_string}'")
         search_results = await get_product_by_search(search_string)
         if products:
-            # Intersect the two lists based on product _id
-            products__ids = {product._id for product in products}
+            # Intersect the two lists based on productid
+            products__ids = {product.id for product in products}
             products = [
-                product for product in search_results if product._id in products__ids]
+                product for product in search_results if product.id in products__ids]
         else:
             products = search_results
 
     # Eliminate duplicates
-    unique_products = {product._id: product for product in products}.values()
+    unique_products = {product.id: product for product in products}.values()
 
     # Sort products if a sorting criterion is specified
     if criteria:
@@ -548,20 +577,30 @@ async def filter_product(
     return list(unique_products)
 
 
-async def insert_product(product_data: Product) -> str:
+async def insert_product(product_data: Product, generate_uid: bool = True) -> str:
     # Collection Products
     collection = DATABASE["Products"]
 
-    # Check if the product already exists
-    existing_product = collection.find_one({"_id": product_data._id})
-    if existing_product:
-        LOG_SYS.write(
-            TAG, f"Insert product with _id: {product_data._id} failed, product already exists.")
-        raise HTTPException(
-            status_code=400, detail="Product already exists")
+    # Insert product with custom or random UID
+    if not generate_uid:
+        # Check if the product already exists (if true rise exeption)
+        existing_product = collection.find_one({"_id": product_data.id})
+        if existing_product:
+            LOG_SYS.write(
+                TAG, f"Insert product with id: {product_data.id} failed, product already exists.")
+            raise HTTPException(
+                status_code=400, detail="Product already exists")
+    else:
+        while (True):
+            # Generate a UID string for the product
+            product_data.id = generate_unique_id(length=13, string=True)
+            
+            # Check if product already exist (if false break the while)
+            existing_product = collection.find_one({"_id": product_data.id})
+            if not existing_product:
+                break
 
     # Insert one new product data into database
-    product_data.id = generate_unique_id(length=13, string=False)
     result = collection.insert_one(product_data.model_dump(by_alias=True))
 
     # Return success message
@@ -575,13 +614,13 @@ async def delete_product(product_id: str) -> str:
 
     # Delete product data from the collection
     LOG_SYS.write(
-        TAG, f"Deleting product data with _id: {product_id} from the database.")
+        TAG, f"Deleting product data with id: {product_id} from the database.")
     result = collection.delete_one({"_id": product_id})
 
     # Check if product was found and deleted
     if result.deleted_count == 0:
         LOG_SYS.write(
-            TAG, f"Delete existing product with _id: {product_id} failed, product not found.")
+            TAG, f"Delete existing product with id: {product_id} failed, product not found.")
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Return success message
@@ -595,14 +634,14 @@ async def update_product(product_id: str, product_data: Product) -> str:
 
     # Update product data in the collection
     LOG_SYS.write(
-        TAG, f"Updating product data with _id: {product_id} in the datbase.")
+        TAG, f"Updating product data with id: {product_id} in the datbase.")
     result = collection.update_one(
         {"_id": product_id}, {"$set": product_data.model_dump()})
 
     # Check if product was found and updated
     if result.matched_count == 0:
         LOG_SYS.write(
-            TAG, f"Updating existing product with _id: {product_data._id} failed, product not found.")
+            TAG, f"Updating existing product with id: {product_data.id} failed, product not found.")
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Return success message

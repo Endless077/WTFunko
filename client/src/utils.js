@@ -1,8 +1,8 @@
-// Utility function to build the full API URL
+// Function to get API URL via given endpoint
 export const getApiUrl = (endpoint) =>
   `http://${config.api_url}:${config.api_port}${endpoint}`;
 
-// Utility function to replace params URL
+// Function to replace URL Params (if exists)
 export function replaceUrlParams(url, params) {
   Object.keys(params).forEach(key => {
     url = url.replace(`{${key}}`, encodeURIComponent(params[key]));
@@ -10,7 +10,7 @@ export function replaceUrlParams(url, params) {
   return url;
 }
 
-// Utility function to fetch data via API
+// General base Fetch data function
 export async function fetchData(endpoint, method = 'GET', queryParams = {}, pathParams = {}, payload = null) {
   try {
     // Replace placeholders in the endpoint with actual path parameters
@@ -40,7 +40,7 @@ export async function fetchData(endpoint, method = 'GET', queryParams = {}, path
 
     // Fetch data using the constructed URL and fetch options
     const response = await fetch(baseUrl.toString(), fetchOptions);
-
+    
     return response;
     
   } catch (error) {

@@ -31,15 +31,16 @@ const ProductInfo = () => {
           pathParams
         );
 
+        const getProductResponseData = await getProductResponse.json();
+
         if (!getProductResponse.ok) {
           throw new Error(
-            getProductResponse.detail ||
+            getProductResponseData.detail ||
               "Product loading failed. Please try again later."
           );
         }
 
-        const getProductData = await getProductResponse.json();
-        setProduct(getProductData);
+        setProduct(getProductResponseData);
       } catch (error) {
         console.error("Error product fetch:", error);
         Swal.fire({

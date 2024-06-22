@@ -1,81 +1,131 @@
-// UserInfo
+// UserInfo.js
 import React, { useState, useEffect } from "react";
 import { Navbar } from "../Navbar";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 // Utils
 import "./UserInfo.css";
-import { confirmAlert } from "react-confirm-alert";
+import Swal from "sweetalert2";
 import "react-confirm-alert/src/react-confirm-alert.css";
-
-// Dati fasulli per esempio
-const fakeUserData = {
-  username: "JohnDoe",
-  email: "johndoe@example.com",
-  orderIds: [101, 102, 103, 104],
-};
-
-const fakeOrdersData = {
-  101: {
-    id: 101,
-    date: "2024-01-15",
-    total: 150.0,
-    items: ["Item A", "Item B"],
-  },
-  102: {
-    id: 102,
-    date: "2024-02-20",
-    total: 200.0,
-    items: ["Item C", "Item D"],
-  },
-  103: {
-    id: 103,
-    date: "2024-03-10",
-    total: 50.0,
-    items: ["Item E", "Item F"],
-  },
-  104: {
-    id: 104,
-    date: "2024-04-05",
-    total: 300.0,
-    items: ["Item G", "Item H"],
-  },
-};
+import { confirmAlert } from "react-confirm-alert";
+import { config, fetchData } from "../../utils";
 
 const UserInfo = () => {
-  const [userData, setUserData] = useState(null);
+  const { username } = useParams();
+  const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState({});
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
+
   const navigate = useNavigate();
 
   /* ********************************************************************************************* */
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const endpointUrl = config.endpoints.getUser.url;
+        const method = config.endpoints.getUser.method;
+        const queryParams = {
+          username: username,
+        };
+
+        const getUserResponse = await fetchData(
+          endpointUrl,
+          method,
+          queryParams,
+          undefined,
+          undefined
+        );
+
+        const getUserResponseData = await getUserResponse.json();
+
+        if (!getUserResponse.ok) {
+          throw new Error(
+            getUserResponseData.detail ||
+              "User information fetch failed. Please try again later."
+          );
+        }
+
+        const userStruct = {
+          username: getUserResponseData.username,
+          email: getUserResponseData.email,
+        };
+
+        localStorage.setItem("user", JSON.stringify(userStruct));
+        setUser(userStruct);
+        
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        Swal.fire({
+          icon: "info",
+          title: "Error fetching user data",
+          text: error.message,
+        });
+      }
+    };
+
+    try {
+      const cachedUser = localStorage.getItem("user");
+      !cachedUser ? fetchUserData() : setUser(JSON.parse(cachedUser));
+
+    } catch (error) {
+      console.error("Error during user info load:", error);
+    }
+  }, [username]);
 
   useEffect(() => {
-    // Simula il recupero dei dati dell'utente
-    setUserData(fakeUserData);
-  }, []);
+    const fetchUserOrders = async () => {
+      try {
+        const endpointUrl = config.endpoints.getUserOrders.url;
+        const method = config.endpoints.getUserOrders.method;
+        const queryParams = {
+          username: username,
+        };
 
+        const getUserOrdersResponse = await fetchData(
+          endpointUrl,
+          method,
+          queryParams,
+          undefined,
+          undefined
+        );
+
+        const getUserResponseData = await getUserOrdersResponse.json();
+
+        if (!getUserOrdersResponse.ok) {
+          throw new Error(
+            getUserResponseData.detail ||
+              "User orders fetch failed. Please try again later."
+          );
+        }
+
+        localStorage.setItem(`${username}Orders`, JSON.stringify(getUserResponseData));
+        setOrders(JSON.parse(getUserResponseData));
+
+      } catch (error) {
+        console.error("Error fetching user orders data:", error);
+        Swal.fire({
+          icon: "info",
+          title: "Error fetching user orders data",
+          text: error.message,
+        });
+      }
+    };
+
+    try {
+      const cachedOrders = localStorage.getItem(`${username}Orders`);
+      !cachedOrders ? fetchUserOrders() : setOrders(JSON.parse(cachedOrders));
+
+    } catch (error) {
+      console.error("Error during user info load:", error);
+    }
+  }, [user]);
+  
   const handleOrderClick = (orderId) => {
     setSelectedOrder((prevSelectedOrder) => ({
       ...prevSelectedOrder,
       [orderId]: !prevSelectedOrder[orderId],
     }));
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("cart");
-    setIsLoggedIn(false);
-    setUsername("");
-    navigate("/");
-  };
-
-  const handleDeleteAccount = () => {
-    //TODO : FARE LA CHIAMATA PER CANCELLARE L'UTENTE CON USERNAME username
-    handleLogout();
   };
 
   const showDeleteConfirmation = () => {
@@ -95,54 +145,70 @@ const UserInfo = () => {
     });
   };
 
+  const handleDeleteAccount = () => {
+    handleLogout();
+  };
+
+  const handleLogout = () => {
+    localStorage.clear()
+    navigate("/");
+  };
+
   /* ********************************************************************************************* */
 
   return (
     <>
       <Navbar />
-      <div className="container my-5 py-5">
+      <div className="container my-4">
         <div className="row">
           <div className="col-12 mb-4 text-center">
             <h1 className="display-6 fw-bolder">User Information</h1>
           </div>
-          {userData ? (
+          {user ? (
             <div className="col-12">
               <div className="user-info-card">
                 <h2 className="user-info-title">Profile Details</h2>
                 <p>
-                  <strong>Username:</strong> {userData.username}
+                  <strong>Username:</strong> {user.username}
                 </p>
                 <p>
-                  <strong>Email:</strong> {userData.email}
+                  <strong>Email:</strong> {user.email}
                 </p>
                 <h3 className="user-info-title">Order History</h3>
                 <ul className="order-list">
-                  {userData.orderIds.map((orderId) => (
-                    <li key={orderId} className="order-item">
+                  {orders.map((order) => (
+                    <li key={order.id} className="order-item">
                       <button
                         className="order-link"
-                        onClick={() => handleOrderClick(orderId)}
+                        onClick={() => handleOrderClick(order.id)}
                       >
-                        Order ID: {orderId}
+                        Order ID: {order.id}
                       </button>
                       <span className="order-total">
-                        ${fakeOrdersData[orderId].total.toFixed(2)}
+                        ${order.total.toFixed(2)}
                       </span>
-                      {selectedOrder[orderId] && (
+                      {selectedOrder[order.id] && (
                         <div className="order-details mt-2">
                           <p>
-                            <strong>Date:</strong>{" "}
-                            {fakeOrdersData[orderId].date}
+                            <strong>Date:</strong> {order.date}
                           </p>
                           <h4>Items:</h4>
                           <ul className="order-items-list">
-                            {fakeOrdersData[orderId].items.map(
-                              (item, index) => (
-                                <li key={index} className="order-item">
-                                  {item}
-                                </li>
-                              )
-                            )}
+                            {order.products.map((product) => (
+                              <li key={product.id} className="order-item">
+                                <img
+                                  src={product.img}
+                                  alt={product.title}
+                                  className="order-item-image"
+                                />
+                                <div>
+                                  <p>{product.title}</p>
+                                  <p>Type: {product.product_type}</p>
+                                  <p>Price: ${product.price}</p>
+                                  <p>Amount: {product.amount}</p>
+                                </div>
+                              </li>
+                            ))}
                           </ul>
                         </div>
                       )}

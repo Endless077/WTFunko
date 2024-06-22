@@ -34,10 +34,12 @@ const Register = () => {
           undefined,
           payload
         );
-
+        
+        const signupResponseData = await signupResponse.json()
+        
         if (!signupResponse.ok) {
           throw new Error(
-            signupResponse.detail ||
+            signupResponseData.detail ||
               "Registration failed. Please try again later."
           );
         }
@@ -101,17 +103,21 @@ const Register = () => {
     if (!usernameRegex.test(username)) {
       throw new Error("Username must not contain special characters or spaces.");
     }
-  
+    
+    setUsername(username.toLowerCase())
+
     const emailRegex = /\S+@\S+\.\S+/
     if (!emailRegex.test(email)) {
       throw new Error("Invalid email format.");
     }
     
+    setEmail(email.toLowerCase())
+
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{6,}$/;
     if (!passwordRegex.test(password)) {
       throw new Error("Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long.");
     }
-  
+    
     return true;
   }
 

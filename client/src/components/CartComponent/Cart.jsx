@@ -102,28 +102,26 @@ const CartPage = () => {
     return total;
   };
 
-  const makeOrder = (user, products) => {
+  const makeOrder = (currentUser, products) => {
     const currentDate = new Date().toISOString();
-
+  
     const orderProducts = products.map((product) => ({
-      product: {
-        id: product._id,
-        title: product.title,
-        product_type: product.product_type,
-        price: product.price,
-        amount: product.cartQuantity,
-        description: product.description,
-        img: product.img,
-      },
+      _id: product._id,
+      title: product.title,
+      product_type: product.product_type,
+      price: product.price,
+      amount: product.cartQuantity,
+      interest: product.interest,
+      description: product.description,
+      img: product.img,
     }));
-
+  
     const total = calculateTotal();
-
+  
     const newOrder = {
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
+        username: currentUser.username,
+        email: currentUser.email,
       },
       products: orderProducts,
       total: total,
@@ -132,9 +130,9 @@ const CartPage = () => {
     };
 
     return newOrder;
-  };
+  };  
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     const sendOrder = async (newOrder) => {
       try {
         const endpointUrl = config.endpoints.insertOrder.url;
@@ -144,13 +142,16 @@ const CartPage = () => {
         const insertOrderResponse = await fetchData(
           endpointUrl,
           method,
-          null,
+          undefined,
+          undefined,
           payload
         );
 
+        const insertOrderResponseData = await insertOrderResponse.json()
+
         if (!insertOrderResponse.ok) {
           throw new Error(
-            insertOrderResponse.detail ||
+            insertOrderResponseData.detail ||
               "Order failed. Please try again later."
           );
         }
@@ -164,7 +165,9 @@ const CartPage = () => {
           showConfirmButton: false,
           allowOutsideClick: false,
           willClose: () => {
-            navigate("/login");
+            setCart([]);
+            localStorage.removeItem("cart");
+            navigate("/");
           },
         });
       } catch (error) {
@@ -172,13 +175,13 @@ const CartPage = () => {
         Swal.fire({
           icon: "error",
           title: "Order Error",
-          text: error.detail,
+          text: error.message,
         });
       }
     };
 
     try {
-      const currentUser = localStorage.getItem("user");
+      const currentUser = JSON.parse(localStorage.getItem('user'));
       if (currentUser == null) {
         Swal.fire({
           icon: "error",
@@ -194,7 +197,7 @@ const CartPage = () => {
         });
       } else {
         const newOrder = makeOrder(currentUser, cart);
-        sendOrder(newOrder);
+        await sendOrder(newOrder);
       }
     } catch (error) {
       console.error("Error during login:", error);
@@ -322,7 +325,7 @@ const CartPage = () => {
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan="6" className="text-end">
+                    <td colSpan="6" className="text-center">
                       <button
                         className="btn btn-success cart-button"
                         onClick={handlePayment}

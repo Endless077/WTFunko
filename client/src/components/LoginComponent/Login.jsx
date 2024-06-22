@@ -34,13 +34,13 @@ const Login = () => {
           payload
         );
 
+        const loginResponseData = await loginResponse.json();
+
         if (!loginResponse.ok) {
           throw new Error(
-            loginResponse.detail || "Login failed. Please try again later."
+            loginResponseData.detail || "Login failed. Please try again later."
           );
         }
-
-        const loginResponseData = loginResponse.json();
 
         Swal.fire({
           icon: "success",
@@ -60,7 +60,7 @@ const Login = () => {
         console.error("Error signup attempt:", error);
         Swal.fire({
           icon: "error",
-          title: "Error during signup attempt",
+          title: "Error during login attempt",
           text: error.message,
         });
       }
@@ -87,7 +87,7 @@ const Login = () => {
 
       Swal.fire({
         icon: "error",
-        title: "Login Error",
+        title: "Error during login attempt",
         text: error.message,
       });
     } finally {
