@@ -1,11 +1,12 @@
 # FastAPI
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Depends, Request, Response, status
 from fastapi.responses import JSONResponse
 import uvicorn
 
 # Security & Middleware
-from fastapi.security import *
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
+import secrets
 
 # Utils
 import os
@@ -25,6 +26,9 @@ from mongo import *
 LOG_SYS = get_logger()
 TAG = "FastAPI"
 
+ADMIN_ACCESS = "FastAPI"
+ADMIN_TOKEN = "0xFastAPI000001"
+
 app = FastAPI(title="FastAPI - WTFunko",
               description="A simple and fast api suite for WTFunko e-commerce.",
               summary="Some easy API for WTFunko Store.",
@@ -41,6 +45,8 @@ app = FastAPI(title="FastAPI - WTFunko",
               },
               version="1.0"
               )
+
+security = HTTPBasic()
 
 origins = [
     "http://127.0.0.1",
@@ -59,25 +65,44 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
+def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(
+        credentials.username, ADMIN_ACCESS)
+    correct_password = secrets.compare_digest(
+        credentials.password, ADMIN_TOKEN)
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
 ###################################################################################################
 
+
 TAG_USERS = ["Users"]
+
 
 @app.post("/login", status_code=200, response_model=UserInfo, tags=TAG_USERS,
           summary="User Login",
           description="Authenticate a user with a username and password, returning user information upon successful login.")
 async def login(user: User):
     try:
-        LOG_SYS.write(TAG, f"Login user with username: {user.username} and password: {user.password}.")
+        LOG_SYS.write(
+            TAG, f"Login user with username: {user.username} and password: {user.password}.")
         user_data = await get_user(user.username)
 
         if hash_string_match(user.password, user_data.password):
             return user_data
         else:
-            raise HTTPException(status_code=401, detail="User password don't match")
+            raise HTTPException(
+                status_code=401, detail="User password don't match")
 
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -89,10 +114,37 @@ async def login(user: User):
           description="Create a new user account with the provided details.")
 async def signup(user: User):
     try:
-        LOG_SYS.write(TAG, f"Signup user with username: {user.username} and email: {user.email}")
+        LOG_SYS.write(
+            TAG, f"Signup user with username: {user.username} and email: {user.email}")
         return await insert_user(user)
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/deleteAccount/{username}", status_code=200, tags=TAG_USERS,
+          summary="User Account Delete",
+          description="Delete a existing user account with the provided details.")
+async def deleteAccount(username: str):
+    try:
+        LOG_SYS.write(
+            TAG, f"Delete all user orders with username: {username}")
+        resultOrders = await delete_order_by_username(username)
+        
+        LOG_SYS.write(
+            TAG, f"Delete all user data with username: {username}")
+        resultUser = await delete_existing_user(username)
+        
+        result = f"{resultUser} & {resultOrders}"
+        return {"message": result}
+        
+    except HTTPException as http_err:
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -105,11 +157,13 @@ async def signup(user: User):
 async def getUser(username: str = Query(..., description="The username of the user to retrieve."),
                   email: str = Query(None, description="The email of the user to retrieve. If not provided, the user will be retrieved by username.")):
     try:
-        LOG_SYS.write(TAG, f"Getting user information with username: {username} or email: {email}.")
+        LOG_SYS.write(
+            TAG, f"Getting user information with username: {username} or email: {email}.")
         user_data = await get_user(username, email)
         return user_data
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -121,11 +175,13 @@ async def getUser(username: str = Query(..., description="The username of the us
           description="Insert a new user into the database with the provided information.")
 async def insertUser(user: User):
     try:
-        LOG_SYS.write(TAG, f"Insert new user information with username: {user.username}.")
+        LOG_SYS.write(
+            TAG, f"Insert new user information with username: {user.username}.")
         result = await insert_user(user)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -137,11 +193,30 @@ async def insertUser(user: User):
             description="Delete a user from the database by username.")
 async def delete_existing_user(username: str):
     try:
-        LOG_SYS.write(TAG, f"Delete existing user information with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"Delete existing user information with username: {username}.")
         result = await delete_user(username)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/clearUsers", status_code=200, tags=TAG_USERS,
+            summary="Delete All Users",
+            description="Delete all users from the database.")
+async def clearUsers(auth: bool = Depends(authenticate)):
+    try:
+        LOG_SYS.write(TAG, f"Clearing Users collection.")
+        result = await clear_users()
+        return {"message": result}
+    except HTTPException as http_err:
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -153,11 +228,13 @@ async def delete_existing_user(username: str):
          description="Update the information of a specific user by username.")
 async def updateUser(username: str, user: User):
     try:
-        LOG_SYS.write(TAG, f"Update existing user information with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"Update existing user information with username: {username}.")
         result = await update_user(username, user)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -168,16 +245,19 @@ async def updateUser(username: str, user: User):
 
 TAG_ORDERS = ["Orders"]
 
+
 @app.get("/getUserOrders", status_code=200, response_model=List[Order], tags=TAG_ORDERS,
          summary="Get User Orders",
          description="Retrieve all orders associated with a user's account by username.")
 async def getUserOrders(username: str = Query(..., description="The username of the user whose orders you want to retrieve.")):
     try:
-        LOG_SYS.write(TAG, f"Getting all orders information from user account with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"Getting all orders information from user account with username: {username}.")
         orders = await get_orders(username)
         return orders
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -189,11 +269,13 @@ async def getUserOrders(username: str = Query(..., description="The username of 
          description="Retrieve the details of a specific order by order ID.")
 async def getOrderInfo(order_id: str = Query(..., description="The ID of the order you want to retrieve.")):
     try:
-        LOG_SYS.write(TAG, f"Getting all information of a specific order with id: {order_id}.")
+        LOG_SYS.write(
+            TAG, f"Getting all information of a specific order with id: {order_id}.")
         order_info = await get_order_info(order_id)
         return order_info
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -205,11 +287,13 @@ async def getOrderInfo(order_id: str = Query(..., description="The ID of the ord
           description="Insert a new order into the database with the provided details.")
 async def insertOrder(order: Order):
     try:
-        LOG_SYS.write(TAG, f"Insert new order information by user:{order.user.username}.")
+        LOG_SYS.write(
+            TAG, f"Insert new order information by user: {order.user.username}.")
         result = await insert_order(order)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -217,15 +301,52 @@ async def insertOrder(order: Order):
 
 
 @app.delete("/deleteOrder/{order_id}", status_code=200, tags=TAG_ORDERS,
-            summary="Delete Order",
+            summary="Delete Order by id",
             description="Delete a specific order from the database by order ID.")
 async def deleteOrder(order_id: str):
     try:
-        LOG_SYS.write(TAG, f"Delete existing order information with id: {order_id}.")
-        result = await delete_order(order_id)
+        LOG_SYS.write(
+            TAG, f"Delete existing order information with id: {order_id}.")
+        result = await delete_order_by_id(order_id)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/deleteOrder/{username}", status_code=200, tags=TAG_ORDERS,
+            summary="Delete Order by username",
+            description="Delete a one or more specific orders from the database by username.")
+async def deleteOrder(username: str):
+    try:
+        LOG_SYS.write(
+            TAG, f"Delete existing orders information with username: {username}.")
+        result = await delete_order_by_username(username)
+        return {"message": result}
+    except HTTPException as http_err:
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/clearOrders", status_code=200, tags=TAG_USERS,
+            summary="Delete All Orders",
+            description="Delete all orders from the database.")
+async def clearOrders(auth: bool = Depends(authenticate)):
+    try:
+        LOG_SYS.write(TAG, f"Clearing Orders collection.")
+        result = await clear_orders()
+        return {"message": result}
+    except HTTPException as http_err:
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -237,11 +358,13 @@ async def deleteOrder(order_id: str):
          description="Update the information of a specific order by order ID.")
 async def updateOrder(order_id: str, order: Order):
     try:
-        LOG_SYS.write(TAG, f"Update existing order information with id: {order_id}.")
+        LOG_SYS.write(
+            TAG, f"Update existing order information with id: {order_id}.")
         result = await update_order(order_id, order)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -256,15 +379,19 @@ TAG_PRODUCTS = ["Products"]
          summary="Get Products",
          description="Retrieve products based on category, search term, sorting criteria, and page index.")
 async def getProducts(category: str = Query(..., description="The category of the products to retrieve."),
-                      searchTerm: str = Query(..., description="The search term to filter the products."),
-                      sortingCriteria: Criteria = Query(..., description="The criteria to sort the products."),
+                      searchTerm: str = Query(
+                          ..., description="The search term to filter the products."),
+                      sortingCriteria: Criteria = Query(
+                          ..., description="The criteria to sort the products."),
                       pageIndex: int = Query(..., description="The page index to retrieve the products from.")):
     try:
-        LOG_SYS.write(TAG, f"Getting products data with some filters at page index {pageIndex}.")
+        LOG_SYS.write(
+            TAG, f"Getting products data with some filters at page index {pageIndex}.")
         products = await get_products(category, searchTerm, sortingCriteria, pageIndex)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -280,7 +407,8 @@ async def getAllProducts():
         products = await get_all_products()
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -293,11 +421,13 @@ async def getAllProducts():
 async def getUniqueProductsCount(category: str = Query(..., description="The category of the products to count."),
                                  searchTerm: str = Query(..., description="The search term to filter the products.")):
     try:
-        LOG_SYS.write(TAG, f"Getting products count with category: {category} and search string: {searchTerm}.")
+        LOG_SYS.write(
+            TAG, f"Getting products count with category: {category} and search string: {searchTerm}.")
         count = await get_unique_products_count(category, searchTerm)
         return count
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -313,7 +443,8 @@ async def getByID(product_id: int):
         products = await get_product_by_id(product_id)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -329,7 +460,8 @@ async def getByCategory(category: str):
         products = await get_products_by_category(category)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -346,7 +478,8 @@ async def getBySearch(product_type: str):
         products = await get_product_by_product_type(product_type)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -363,7 +496,8 @@ async def getBySearch(search_string: str):
         products = await get_product_by_search(search_string)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -380,7 +514,8 @@ async def sortingBy(criteria: str, asc: bool):
         products = await sort_product(criteria, asc)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -396,7 +531,8 @@ async def getFilter(category: str = None, search_string: str = None, criteria: s
         products = await filter_product(category, search_string, criteria)
         return products
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -413,7 +549,8 @@ async def insertProduct(product: Product):
         result = await insert_product(product)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
@@ -430,12 +567,29 @@ async def deleteProduct(product_id: str):
         result = await delete_product(product_id)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.delete("/clearProducts", status_code=200, tags=TAG_USERS,
+            summary="Delete All Products",
+            description="Delete all products from the database.")
+async def clearProducts(auth: bool = Depends(authenticate)):
+    try:
+        LOG_SYS.write(TAG, f"Clearing Products collection.")
+        result = await clear_products()
+        return {"message": result}
+    except HTTPException as http_err:
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.put("/updateProduct/{product_id}", status_code=200, tags=TAG_PRODUCTS,
@@ -448,13 +602,15 @@ async def updateProduct(product_id: str, product: Product):
         result = await update_product(product_id, product)
         return {"message": result}
     except HTTPException as http_err:
-        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        LOG_SYS.write(
+            TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 ###################################################################################################
+
 
 @app.get('/', status_code=200, tags=["root"])
 @app.get('/about', status_code=200, tags=["root"])
@@ -467,14 +623,22 @@ STARTUP_TAG = "STARTUP"
 
 
 def welcome_message():
-    LOG_SYS.write(STARTUP_TAG, "__          _________ ______           _          ")
-    LOG_SYS.write(STARTUP_TAG, "\ \        / /__   __|  ____|         | |         ")
-    LOG_SYS.write(STARTUP_TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
-    LOG_SYS.write(STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
-    LOG_SYS.write(STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
-    LOG_SYS.write(STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
+    LOG_SYS.write(
+        STARTUP_TAG, "__          _________ ______           _          ")
+    LOG_SYS.write(
+        STARTUP_TAG, "\ \        / /__   __|  ____|         | |         ")
+    LOG_SYS.write(
+        STARTUP_TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
+    LOG_SYS.write(
+        STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
+    LOG_SYS.write(
+        STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
+    LOG_SYS.write(
+        STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
+
 
 SHUTDOWN_TAG = "SHUTDOWN"
+
 
 def shutdown(signum, frame):
     try:

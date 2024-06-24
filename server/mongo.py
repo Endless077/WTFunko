@@ -116,7 +116,8 @@ async def insert_user(user_data: User, generate_uid: bool = True) -> str:
     collection = DATABASE["Users"]
 
     # Check if the user already exists
-    existing_user_username = collection.find_one({"username": user_data.username})
+    existing_user_username = collection.find_one(
+        {"username": user_data.username})
     if existing_user_username:
         LOG_SYS.write(
             TAG, f"Insert new user with username: {user_data.username} failed, user already exists.")
@@ -134,16 +135,16 @@ async def insert_user(user_data: User, generate_uid: bool = True) -> str:
     else:
         while (True):
             # Generate a UID string for the user
-            user_data.id = generate_unique_id(length=13, string=False)
-            
+            user_data.id = generate_unique_id(length=13, alphanumeric=False)
+
             # Check if order already exist
             existing_user_id = collection.find_one({"_id": user_data.id})
             if not existing_user_id:
                 break
-            
+
     # Hashing the user password in bcrypt hash algorithm
     user_data.password = hash_string(user_data.password)
-    
+
     # Insert one new user data into the collection
     result = collection.insert_one(user_data.model_dump(by_alias=True))
 
@@ -170,6 +171,18 @@ async def delete_user(username: str) -> str:
     # Return success message
     LOG_SYS.write(TAG, "User data deleted successfully.")
     return "User deleted successfully."
+
+
+async def clear_users() -> str:
+    # Collection Users
+    collection = DATABASE["Users"]
+
+    # Delete all users data from the collection
+    result = collection.delete_many()
+
+    # Return success message
+    LOG_SYS.write(TAG, "All Users data deleted successfully.")
+    return "Users collection cleared successfully."
 
 
 async def update_user(username: str, user_data: User) -> str:
@@ -213,9 +226,9 @@ async def get_orders(username: str) -> List[Order]:
 
     # Build a list of instance of Orders using the data retrieved from the database
     orders = [Order(**order) for order in orders_data]
-
+    
     # Return the user orders list
-    LOG_SYS.write(TAG, f"Found {len(orders)} for user: {username}")
+    LOG_SYS.write(TAG, f"Found {len(orders)} orders for user: {username}")
     return orders
 
 
@@ -243,7 +256,7 @@ async def get_order_info(order_id: str) -> Order:
 async def insert_order(order_data: Order, generate_uid: bool = True) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
-
+    
     # Insert order with custom or random UID
     if not generate_uid:
         # Check if the order already exists (if true rise exeption)
@@ -256,22 +269,22 @@ async def insert_order(order_data: Order, generate_uid: bool = True) -> str:
     else:
         while (True):
             # Generate a UID string for the order
-            order_data.id = generate_unique_id(length=13, string=True)
+            order_data.id = generate_unique_id(length=13, alphanumeric=True)
             
             # Check if order already exist (if false break the while)
             existing_order = collection.find_one({"_id": order_data.id})
             if not existing_order:
                 break
-        
+    
     # Insert one new order data into database
     result = collection.insert_one(order_data.model_dump(by_alias=True))
-        
+
     # Return success message
     LOG_SYS.write(TAG, "Order data insert successfully.")
     return "Order inserted successfully."
 
 
-async def delete_order(order_id: str) -> str:
+async def delete_order_by_id(order_id: str) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
 
@@ -289,6 +302,38 @@ async def delete_order(order_id: str) -> str:
     # Return success message
     LOG_SYS.write(TAG, "Order data deleted successfully.")
     return "Order deleted successfully."
+
+
+async def delete_order_by_username(username: str) -> str:
+    # Collection Orders
+    collection = DATABASE["Orders"]
+
+    # Delete one funcion to update the new order info
+    LOG_SYS.write(
+        TAG, f"Deleting order data with username: {username} from the database.")
+    result = collection.delete_many({"user.username": username})
+
+    # Check if order was found and deleted
+    if result.deleted_count == 0:
+        LOG_SYS.write(
+            TAG, f"Delete existing order with username: {username} failed, order not found.")
+        raise HTTPException(status_code=404, detail="Orders not found")
+
+    # Return success message
+    LOG_SYS.write(TAG, "Order data deleted successfully.")
+    return "Orders deleted successfully."
+
+
+async def clear_orders() -> str:
+    # Collection Orders
+    collection = DATABASE["Orders"]
+
+    # Delete all orders data from the collection
+    result = collection.delete_many()
+
+    # Return success message
+    LOG_SYS.write(TAG, "All Orders data deleted successfully.")
+    return "Orders collection cleared successfully."
 
 
 async def update_order(order_id: str, order_data: Order) -> str:
@@ -561,7 +606,6 @@ async def filter_product(
         else:
             # If products are already filtered, apply sorting to these products
             if unique_products:
-                sort_order = 1 if asc else -1
                 unique_products = sorted(
                     unique_products,
                     key=lambda x: x.price if criteria == "price" else x.title,
@@ -593,8 +637,8 @@ async def insert_product(product_data: Product, generate_uid: bool = True) -> st
     else:
         while (True):
             # Generate a UID string for the product
-            product_data.id = generate_unique_id(length=13, string=True)
-            
+            product_data.id = generate_unique_id(length=13, alphanumeric=True)
+
             # Check if product already exist (if false break the while)
             existing_product = collection.find_one({"_id": product_data.id})
             if not existing_product:
@@ -626,6 +670,18 @@ async def delete_product(product_id: str) -> str:
     # Return success message
     LOG_SYS.write(TAG, "Product data deleted successfully.")
     return "Product deleted successfully."
+
+
+async def clear_products() -> str:
+    # Collection Products
+    collection = DATABASE["Products"]
+
+    # Delete all products data from the collection
+    result = collection.delete_many()
+
+    # Return success message
+    LOG_SYS.write(TAG, "All Products data deleted successfully.")
+    return "Products collection cleared successfully."
 
 
 async def update_product(product_id: str, product_data: Product) -> str:

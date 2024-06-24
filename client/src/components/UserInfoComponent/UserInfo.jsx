@@ -1,20 +1,22 @@
 // UserInfo.js
 import React, { useState, useEffect } from "react";
 import { Navbar } from "../Navbar";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Utils
 import "./UserInfo.css";
 import Swal from "sweetalert2";
+import { format } from "date-fns";
+import { Status } from "../enumerations";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import { confirmAlert } from "react-confirm-alert";
 import { config, fetchData } from "../../utils";
 
 const UserInfo = () => {
-  const { username } = useParams();
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState({});
+
+  const { username } = useParams();
 
   const navigate = useNavigate();
 
@@ -53,7 +55,6 @@ const UserInfo = () => {
 
         localStorage.setItem("user", JSON.stringify(userStruct));
         setUser(userStruct);
-        
       } catch (error) {
         console.error("Error fetching user data:", error);
         Swal.fire({
@@ -67,7 +68,6 @@ const UserInfo = () => {
     try {
       const cachedUser = localStorage.getItem("user");
       !cachedUser ? fetchUserData() : setUser(JSON.parse(cachedUser));
-
     } catch (error) {
       console.error("Error during user info load:", error);
     }
@@ -99,13 +99,15 @@ const UserInfo = () => {
           );
         }
 
-        localStorage.setItem(`${username}Orders`, JSON.stringify(getUserResponseData));
-        setOrders(JSON.parse(getUserResponseData));
-
+        localStorage.setItem(
+          `${username}Orders`,
+          JSON.stringify(getUserResponseData)
+        );
+        setOrders(getUserResponseData);
       } catch (error) {
         console.error("Error fetching user orders data:", error);
         Swal.fire({
-          icon: "info",
+          icon: "error",
           title: "Error fetching user orders data",
           text: error.message,
         });
@@ -115,12 +117,11 @@ const UserInfo = () => {
     try {
       const cachedOrders = localStorage.getItem(`${username}Orders`);
       !cachedOrders ? fetchUserOrders() : setOrders(JSON.parse(cachedOrders));
-
     } catch (error) {
       console.error("Error during user info load:", error);
     }
   }, [user]);
-  
+
   const handleOrderClick = (orderId) => {
     setSelectedOrder((prevSelectedOrder) => ({
       ...prevSelectedOrder,
@@ -129,29 +130,89 @@ const UserInfo = () => {
   };
 
   const showDeleteConfirmation = () => {
-    confirmAlert({
-      title: "Confirm to delete account",
-      message: "Are you sure you want to delete your account?",
-      buttons: [
-        {
-          label: "Yes",
-          onClick: handleDeleteAccount,
-        },
-        {
-          label: "No",
-          onClick: () => {},
-        },
-      ],
+    Swal.fire({
+      title: 'Confirm to delete account',
+      text: 'Are you sure you want to delete your account?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDeleteAccount();
+      }
     });
   };
 
-  const handleDeleteAccount = () => {
-    handleLogout();
+  const getOrderButtonColor = (status) => {
+    switch (status) {
+      case Status.FULLFILLED:
+        return "#28a745";
+      case Status.ON_HOLD:
+        return "#ffc107";
+      case Status.SCHEDULED:
+        return "#dc3545";
+      default:
+        return "#000000";
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.clear()
-    navigate("/");
+  const handleDeleteAccount = () => {
+    const fetchDeleteUser = async () => {
+      try {
+        const endpointUrl = config.endpoints.deleteAccount.url;
+        const method = config.endpoints.deleteAccount.method;
+        const pathParams = {
+          username: username,
+        };
+        const deleteUserResponse = await fetchData(
+          endpointUrl,
+          method,
+          undefined,
+          pathParams,
+          undefined
+        );
+
+        const deleteUserResponseData = await deleteUserResponse.json();
+
+        if (!deleteUserResponse.ok) {
+          throw new Error(
+            deleteUserResponseData.detail ||
+              "User account deletion fetch failed. Please try again later."
+          );
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "User Account Deleted",
+          text: `Thank you ${username} for being our customer \u2764\uFE0F.`,
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          willClose: () => {
+            localStorage.clear();
+            navigate("/");
+          },
+        });
+      } catch (error) {
+        console.error("Error fetching deletion user account:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error during account deletion",
+          text: error.message,
+        });
+      }
+    };
+
+    try {
+      fetchDeleteUser()
+    }catch(error){
+      console.error("Error durin user account deletion:", error);
+    }
+    
   };
 
   /* ********************************************************************************************* */
@@ -174,35 +235,51 @@ const UserInfo = () => {
                 <p>
                   <strong>Email:</strong> {user.email}
                 </p>
+              </div>
+              <div className="order-history-section">
                 <h3 className="user-info-title">Order History</h3>
                 <ul className="order-list">
                   {orders.map((order) => (
-                    <li key={order.id} className="order-item">
+                    <li key={order._id} className="order-item">
                       <button
                         className="order-link"
-                        onClick={() => handleOrderClick(order.id)}
+                        style={{ backgroundColor: getOrderButtonColor(order.status) }}
+                        onClick={() => handleOrderClick(order._id)}
                       >
-                        Order ID: {order.id}
+                        Order ID: {order._id}
                       </button>
-                      <span className="order-total">
-                        ${order.total.toFixed(2)}
-                      </span>
-                      {selectedOrder[order.id] && (
+                      <div className="order-item-details">
+                        <div>
+                          Date: {format(new Date(order.date), "dd/MM/yyyy")}
+                        </div>
+                        <div>Status: {order.status}</div>
+                        <div>Total: ${order.total.toFixed(2)}</div>
+                      </div>
+                      {selectedOrder[order._id] && (
                         <div className="order-details mt-2">
-                          <p>
-                            <strong>Date:</strong> {order.date}
-                          </p>
-                          <h4>Items:</h4>
+                          <h3>Order Items:</h3>
                           <ul className="order-items-list">
                             {order.products.map((product) => (
-                              <li key={product.id} className="order-item">
-                                <img
-                                  src={product.img}
-                                  alt={product.title}
-                                  className="order-item-image"
-                                />
+                              <li key={product._id} className="order-item">
+                                <Link to={`/productInfo/${product._id}`}>
+                                  <img
+                                    src={product.img}
+                                    className="card-img-top product-image"
+                                    alt={product.title}
+                                    height="100"
+                                    width="100"
+                                    onError={(e) =>
+                                      (e.target.src =
+                                        "/assets/Funko_Placeholder.png")
+                                    }
+                                  />
+                                </Link>
                                 <div>
-                                  <p>{product.title}</p>
+                                  <Link to={`/productInfo/${product._id}`}>
+                                    <h5 className="card-title mb-0">
+                                      {product.title}
+                                    </h5>
+                                  </Link>
                                   <p>Type: {product.product_type}</p>
                                   <p>Price: ${product.price}</p>
                                   <p>Amount: {product.amount}</p>
@@ -216,7 +293,7 @@ const UserInfo = () => {
                   ))}
                 </ul>
               </div>
-              <div className="delete-account-button">
+              <div className="delete-account-button text-center mt-4">
                 <button
                   className="btn btn-danger"
                   onClick={showDeleteConfirmation}

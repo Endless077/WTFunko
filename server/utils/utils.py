@@ -2,6 +2,7 @@
 
 # Math Libraries
 import uuid
+import random
 import bcrypt
 import hashlib
 import pandas as pd
@@ -133,9 +134,15 @@ def hash_string_match(string: str, hashed: str) -> bool:
     return bcrypt.checkpw(string.encode('utf-8'), hashed.encode('utf-8'))
     
 # Generate UID
-def generate_unique_id(length: int, string: bool = False):
-    unique_id = uuid.uuid4()
-    hashed_id = hashlib.md5(str(unique_id).encode()).hexdigest()[:length]
-    return hashed_id if string else int(hashed_id, 16)
+def generate_unique_id(length: int, alphanumeric: bool = False):
+    if alphanumeric:
+        alphanumeric_chars = string.ascii_letters + string.digits
+        unique_id = ''.join(random.choice(alphanumeric_chars) for _ in range(length))
+    else:
+        min_num = 10 ** (length - 1)
+        max_num = (10 ** length) - 1
+        unique_id = random.randint(min_num, max_num)
+    
+    return unique_id
 
 ##################################################################################################

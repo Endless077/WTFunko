@@ -1,3 +1,11 @@
+/* Card Styles */
+.card {
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* Button Styles */
 .btn-outline-danger {
   border-color: #dc3545;
   color: #dc3545;
@@ -26,10 +34,4 @@
 .btn-outline-secondary:hover {
   background-color: #6c757d;
   color: #fff;
-}
-
-.card {
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
 }

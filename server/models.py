@@ -42,7 +42,7 @@ class OrderPorduct(BaseModel):
 
 
 class Order(BaseModel):
-    id: Optional[int] = Field(-1, alias='_id', description="Unique identifier for the order")
+    id: Optional[str] = Field(-1, alias='_id', description="Unique identifier for the order")
     user: UserInfo = Field(..., description="User associated with the order")
     products: List[OrderPorduct] = Field(..., description="List of products and their quantities in the order")
     total: float = Field(..., description="Total price of the order")

@@ -1,3 +1,4 @@
+/* Cart Container */
 .cart-container {
   margin-left: 500px;
   margin-right: 500px;
@@ -9,6 +10,7 @@
   width: 25%;
 }
 
+/* Cart Quantity */
 .cart-quantity {
   display: inline-block;
   font-size: 1rem;
@@ -17,6 +19,7 @@
   text-align: center;
 }
 
+/* Cart Quantity Control */
 .cart-quantity-control {
   align-items: center;
   display: flex;
@@ -33,6 +36,7 @@
   margin: 0 0.5rem;
 }
 
+/* Cart Table */
 .cart-table {
   table-layout: fixed;
   width: 100%;
@@ -52,6 +56,7 @@
   width: 40%;
 }
 
+/* General Table Styles */
 .table {
   table-layout: fixed;
   width: 100%;

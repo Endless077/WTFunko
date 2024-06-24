@@ -1,14 +1,17 @@
+/* Card Body Styles */
 .card-body {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
+/* Image Styles */
 .img-fluid {
   height: auto;
   max-width: 100%;
 }
 
+/* Product Info Styles */
 .product-info {
   margin-top: 20px;
 }

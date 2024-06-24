@@ -1,13 +1,15 @@
+/* Card Link Image */
 .card-link img {
   color: inherit;
   text-decoration: none;
   transition: box-shadow 0.3s ease;
 }
 
-.card-link :hover img {
+.card-link:hover img {
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
+/* Container */
 .container {
   margin: 0 auto;
   max-width: 1400px;

@@ -7,11 +7,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 // Utils
 import "./Products.css";
 import Swal from "sweetalert2";
-import { Criteria } from "../criteria";
+import { Criteria } from "../enumerations";
 import { config, fetchData } from "../../utils";
 
 export const Products = () => {
-  const uniqueProductsCountKey = "Unique Products Count";
+  const uniqueProductsCountKey = "Products Count";
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,8 +21,7 @@ export const Products = () => {
   const currentPage = parseInt(queryParams.get("page")) || 0;
   const currentCategory = queryParams.get("category") || "All";
   const currentSearchTerm = queryParams.get("searchTerm") || "";
-  const currentSortingCriteria =
-    queryParams.get("sortingCriteria") || Criteria.DEFAULT;
+  const currentSortingCriteria = queryParams.get("sortingCriteria") || Criteria.DEFAULT;
 
   const [cart, setCart] = useState([]);
   const [productsPerPage] = useState(20);
@@ -94,7 +93,7 @@ export const Products = () => {
       }
     };
 
-   currentPage !== null && fetchProducts();
+    currentPage !== null && fetchProducts();
   }, [currentCategory, currentSearchTerm, currentSortingCriteria, currentPage]);
 
   useEffect(() => {

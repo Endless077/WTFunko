@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 // Utils
 import "./Cart.css";
 import Swal from "sweetalert2";
+import { Status } from "../enumerations";
 import { config, fetchData } from "../../utils";
 
 const CartPage = () => {
@@ -14,13 +15,17 @@ const CartPage = () => {
   const FREE_SHIPPING_THRESHOLD = 100;
 
   const [cart, setCart] = useState([]);
+  const [username, setUsername] = useState("");
+
   const navigate = useNavigate();
 
   /* ********************************************************************************************* */
 
   useEffect(() => {
+    const username = JSON.parse(localStorage.getItem("user")).username
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(storedCart);
+    setUsername(username)
   }, []);
 
   const updateQuantity = (productId, newQuantity) => {
@@ -117,7 +122,13 @@ const CartPage = () => {
     }));
   
     const total = calculateTotal();
-  
+    
+    const statusKeys = Object.keys(Status);
+    const randomKey = statusKeys[Math.floor(Math.random() * statusKeys.length)];
+    const randomStatus = Status[randomKey];
+
+    console.log(randomKey)
+    console.log(randomStatus)
     const newOrder = {
       user: {
         username: currentUser.username,
@@ -126,7 +137,7 @@ const CartPage = () => {
       products: orderProducts,
       total: total,
       date: currentDate,
-      status: "Evaso",
+      status: randomStatus,
     };
 
     return newOrder;
@@ -167,6 +178,7 @@ const CartPage = () => {
           willClose: () => {
             setCart([]);
             localStorage.removeItem("cart");
+            localStorage.removeItem(`${username}Orders`)
             navigate("/");
           },
         });
@@ -192,7 +204,7 @@ const CartPage = () => {
           showConfirmButton: false,
           allowOutsideClick: false,
           willClose: () => {
-            navigate("/");
+            navigate("/login");
           },
         });
       } else {

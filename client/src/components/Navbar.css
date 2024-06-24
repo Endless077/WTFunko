@@ -1,12 +1,14 @@
-.buttons {
-  align-items: center;
-  display: flex;
-}
-
+/* Navbar */
 .navbar {
   border: none;
 }
 
 .navbar-brand img {
   height: 150px;
+}
+
+/* Buttons */
+.buttons {
+  align-items: center;
+  display: flex;
 }

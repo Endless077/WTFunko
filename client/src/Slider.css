@@ -1,3 +1,4 @@
+/* Featured Slider Container */
 .f_slider {
   align-items: center;
   display: flex;
@@ -5,6 +6,7 @@
   justify-content: space-between;
 }
 
+/* Featured Slider Image */
 .f_slider img {
   height: 200px;
   width: 300px;
@@ -17,6 +19,7 @@
   transform: scale(1.1);
 }
 
+/* Slider Container */
 .slider-container {
   margin: 0 auto;
 }

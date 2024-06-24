@@ -6,3 +6,10 @@ export const Criteria = {
   TITLE_ASCENDING: "Title Ascending",
   TITLE_DESCENDING: "Title Descending",
 };
+
+// Enumeration - Order Status
+export const Status = {
+  FULLFILLED: "Fullfilled",
+  SCHEDULED: "Scheduled",
+  ON_HOLD: "On hold",
+}
