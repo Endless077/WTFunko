@@ -617,6 +617,7 @@ async def updateProduct(product_id: str, product: Product):
 async def about():
     return {"App Name": "WTFunko"}
 
+
 ###################################################################################################
 
 STARTUP_TAG = "STARTUP"
