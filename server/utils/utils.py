@@ -128,7 +128,7 @@ def append_to_json(filename: str, data: dict) -> bool:
 def hash_string(string: str) -> bytes:
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(string.encode('utf-8'), salt)
-    return hashed
+    return hashed.decode("utf-8")
 
 def hash_string_match(string: str, hashed: str) -> bool:
     return bcrypt.checkpw(string.encode('utf-8'), hashed.encode('utf-8'))

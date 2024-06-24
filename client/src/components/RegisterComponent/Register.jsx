@@ -47,7 +47,7 @@ const Register = () => {
         Swal.fire({
           icon: "success",
           title: "Registration Successful",
-          text: `Welcome ${username}`,
+          text: `Welcome\uD83D\uDC4B, ${username}!`,
           timer: 3000,
           timerProgressBar: true,
           showConfirmButton: false,

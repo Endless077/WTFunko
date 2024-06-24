@@ -88,10 +88,14 @@ TAG_USERS = ["Users"]
 @app.post("/login", status_code=200, response_model=UserInfo, tags=TAG_USERS,
           summary="User Login",
           description="Authenticate a user with a username and password, returning user information upon successful login.")
-async def login(user: User):
+async def login(request: Request, user: User):
     try:
         LOG_SYS.write(
             TAG, f"Login user with username: {user.username} and password: {user.password}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         user_data = await get_user(user.username)
 
         if hash_string_match(user.password, user_data.password):
@@ -112,10 +116,14 @@ async def login(user: User):
 @app.post("/signup", status_code=201, tags=TAG_USERS,
           summary="User Signup",
           description="Create a new user account with the provided details.")
-async def signup(user: User):
+async def signup(request: Request, user: User):
     try:
         LOG_SYS.write(
             TAG, f"Signup user with username: {user.username} and email: {user.email}")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         return await insert_user(user)
     except HTTPException as http_err:
         LOG_SYS.write(
@@ -127,21 +135,25 @@ async def signup(user: User):
 
 
 @app.delete("/deleteAccount/{username}", status_code=200, tags=TAG_USERS,
-          summary="User Account Delete",
-          description="Delete a existing user account with the provided details.")
-async def deleteAccount(username: str):
+            summary="User Account Delete",
+            description="Delete a existing user account with the provided details.")
+async def deleteAccount(request: Request, username: str):
     try:
         LOG_SYS.write(
             TAG, f"Delete all user orders with username: {username}")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         resultOrders = await delete_order_by_username(username)
-        
+
         LOG_SYS.write(
             TAG, f"Delete all user data with username: {username}")
         resultUser = await delete_existing_user(username)
-        
+
         result = f"{resultUser} & {resultOrders}"
         return {"message": result}
-        
+
     except HTTPException as http_err:
         LOG_SYS.write(
             TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
@@ -154,11 +166,17 @@ async def deleteAccount(username: str):
 @app.get("/getUser", status_code=200, response_model=User, tags=TAG_USERS,
          summary="Get User Information",
          description="Retrieve user information by username or email.")
-async def getUser(username: str = Query(..., description="The username of the user to retrieve."),
+async def getUser(request: Request,
+                  username: str = Query(...,
+                                        description="The username of the user to retrieve."),
                   email: str = Query(None, description="The email of the user to retrieve. If not provided, the user will be retrieved by username.")):
     try:
         LOG_SYS.write(
             TAG, f"Getting user information with username: {username} or email: {email}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         user_data = await get_user(username, email)
         return user_data
     except HTTPException as http_err:
@@ -173,10 +191,14 @@ async def getUser(username: str = Query(..., description="The username of the us
 @app.post("/insertUser", status_code=201, tags=TAG_USERS,
           summary="Insert New User",
           description="Insert a new user into the database with the provided information.")
-async def insertUser(user: User):
+async def insertUser(request: Request, user: User):
     try:
         LOG_SYS.write(
             TAG, f"Insert new user information with username: {user.username}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await insert_user(user)
         return {"message": result}
     except HTTPException as http_err:
@@ -191,10 +213,14 @@ async def insertUser(user: User):
 @app.delete("/deleteUser/{username}", status_code=200, tags=TAG_USERS,
             summary="Delete User",
             description="Delete a user from the database by username.")
-async def delete_existing_user(username: str):
+async def delete_existing_user(request: Request, username: str):
     try:
         LOG_SYS.write(
             TAG, f"Delete existing user information with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await delete_user(username)
         return {"message": result}
     except HTTPException as http_err:
@@ -209,9 +235,13 @@ async def delete_existing_user(username: str):
 @app.delete("/clearUsers", status_code=200, tags=TAG_USERS,
             summary="Delete All Users",
             description="Delete all users from the database.")
-async def clearUsers(auth: bool = Depends(authenticate)):
+async def clearUsers(request: Request, auth: bool = Depends(authenticate)):
     try:
         LOG_SYS.write(TAG, f"Clearing Users collection.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await clear_users()
         return {"message": result}
     except HTTPException as http_err:
@@ -226,10 +256,14 @@ async def clearUsers(auth: bool = Depends(authenticate)):
 @app.put("/updateUser", status_code=200, tags=TAG_USERS,
          summary="Update User Information",
          description="Update the information of a specific user by username.")
-async def updateUser(username: str, user: User):
+async def updateUser(request: Request, username: str, user: User):
     try:
         LOG_SYS.write(
             TAG, f"Update existing user information with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await update_user(username, user)
         return {"message": result}
     except HTTPException as http_err:
@@ -249,10 +283,14 @@ TAG_ORDERS = ["Orders"]
 @app.get("/getUserOrders", status_code=200, response_model=List[Order], tags=TAG_ORDERS,
          summary="Get User Orders",
          description="Retrieve all orders associated with a user's account by username.")
-async def getUserOrders(username: str = Query(..., description="The username of the user whose orders you want to retrieve.")):
+async def getUserOrders(request: Request, username: str = Query(..., description="The username of the user whose orders you want to retrieve.")):
     try:
         LOG_SYS.write(
             TAG, f"Getting all orders information from user account with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         orders = await get_orders(username)
         return orders
     except HTTPException as http_err:
@@ -267,10 +305,14 @@ async def getUserOrders(username: str = Query(..., description="The username of 
 @app.get("/getOrderInfo", status_code=200, response_model=Order, tags=TAG_ORDERS,
          summary="Get Order Information",
          description="Retrieve the details of a specific order by order ID.")
-async def getOrderInfo(order_id: str = Query(..., description="The ID of the order you want to retrieve.")):
+async def getOrderInfo(request: Request, order_id: str = Query(..., description="The ID of the order you want to retrieve.")):
     try:
         LOG_SYS.write(
             TAG, f"Getting all information of a specific order with id: {order_id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         order_info = await get_order_info(order_id)
         return order_info
     except HTTPException as http_err:
@@ -285,10 +327,14 @@ async def getOrderInfo(order_id: str = Query(..., description="The ID of the ord
 @app.post("/insertOrder", status_code=201, tags=TAG_ORDERS,
           summary="Insert New Order",
           description="Insert a new order into the database with the provided details.")
-async def insertOrder(order: Order):
+async def insertOrder(request: Request, order: Order):
     try:
         LOG_SYS.write(
             TAG, f"Insert new order information by user: {order.user.username}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await insert_order(order)
         return {"message": result}
     except HTTPException as http_err:
@@ -303,10 +349,14 @@ async def insertOrder(order: Order):
 @app.delete("/deleteOrder/{order_id}", status_code=200, tags=TAG_ORDERS,
             summary="Delete Order by id",
             description="Delete a specific order from the database by order ID.")
-async def deleteOrder(order_id: str):
+async def deleteOrder(request: Request, order_id: str):
     try:
         LOG_SYS.write(
             TAG, f"Delete existing order information with id: {order_id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await delete_order_by_id(order_id)
         return {"message": result}
     except HTTPException as http_err:
@@ -321,10 +371,14 @@ async def deleteOrder(order_id: str):
 @app.delete("/deleteOrder/{username}", status_code=200, tags=TAG_ORDERS,
             summary="Delete Order by username",
             description="Delete a one or more specific orders from the database by username.")
-async def deleteOrder(username: str):
+async def deleteOrder(request: Request, username: str):
     try:
         LOG_SYS.write(
             TAG, f"Delete existing orders information with username: {username}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await delete_order_by_username(username)
         return {"message": result}
     except HTTPException as http_err:
@@ -336,12 +390,16 @@ async def deleteOrder(username: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/clearOrders", status_code=200, tags=TAG_USERS,
+@app.delete("/clearOrders", status_code=200, tags=TAG_ORDERS,
             summary="Delete All Orders",
             description="Delete all orders from the database.")
-async def clearOrders(auth: bool = Depends(authenticate)):
+async def clearOrders(request: Request, auth: bool = Depends(authenticate)):
     try:
         LOG_SYS.write(TAG, f"Clearing Orders collection.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await clear_orders()
         return {"message": result}
     except HTTPException as http_err:
@@ -356,10 +414,14 @@ async def clearOrders(auth: bool = Depends(authenticate)):
 @app.put("/updateOrder", status_code=200, tags=TAG_ORDERS,
          summary="Update Order Information",
          description="Update the information of a specific order by order ID.")
-async def updateOrder(order_id: str, order: Order):
+async def updateOrder(request: Request, order_id: str, order: Order):
     try:
         LOG_SYS.write(
             TAG, f"Update existing order information with id: {order_id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await update_order(order_id, order)
         return {"message": result}
     except HTTPException as http_err:
@@ -378,7 +440,9 @@ TAG_PRODUCTS = ["Products"]
 @app.get("/getProducts", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products",
          description="Retrieve products based on category, search term, sorting criteria, and page index.")
-async def getProducts(category: str = Query(..., description="The category of the products to retrieve."),
+async def getProducts(request: Request,
+                      category: str = Query(
+                          ..., description="The category of the products to retrieve."),
                       searchTerm: str = Query(
                           ..., description="The search term to filter the products."),
                       sortingCriteria: Criteria = Query(
@@ -387,6 +451,10 @@ async def getProducts(category: str = Query(..., description="The category of th
     try:
         LOG_SYS.write(
             TAG, f"Getting products data with some filters at page index {pageIndex}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await get_products(category, searchTerm, sortingCriteria, pageIndex)
         return products
     except HTTPException as http_err:
@@ -401,9 +469,13 @@ async def getProducts(category: str = Query(..., description="The category of th
 @app.get("/getAllProducts", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get All Products",
          description="Retrieve all products available in the database.")
-async def getAllProducts():
+async def getAllProducts(request: Request):
     try:
         LOG_SYS.write(TAG, f"Getting all product from Database.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await get_all_products()
         return products
     except HTTPException as http_err:
@@ -418,11 +490,17 @@ async def getAllProducts():
 @app.get("/getUniqueProductsCount", status_code=200, tags=TAG_PRODUCTS,
          summary="Get Unique Products Count",
          description="Retrieve the count of unique products for a specific category and search term.")
-async def getUniqueProductsCount(category: str = Query(..., description="The category of the products to count."),
+async def getUniqueProductsCount(request: Request,
+                                 category: str = Query(
+                                     ..., description="The category of the products to count."),
                                  searchTerm: str = Query(..., description="The search term to filter the products.")):
     try:
         LOG_SYS.write(
             TAG, f"Getting products count with category: {category} and search string: {searchTerm}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         count = await get_unique_products_count(category, searchTerm)
         return count
     except HTTPException as http_err:
@@ -437,9 +515,13 @@ async def getUniqueProductsCount(category: str = Query(..., description="The cat
 @app.get("/getByID/{product_id}", response_model=Product, status_code=200, tags=TAG_PRODUCTS,
          summary="Get Product by ID",
          description="Retrieve a specific product by its unique identifier.")
-async def getByID(product_id: int):
+async def getByID(request: Request, product_id: int):
     try:
         LOG_SYS.write(TAG, f"Getting specific product by id: {product_id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await get_product_by_id(product_id)
         return products
     except HTTPException as http_err:
@@ -454,9 +536,13 @@ async def getByID(product_id: int):
 @app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products by Category",
          description="Retrieve products based on a specific category.")
-async def getByCategory(category: str):
+async def getByCategory(request: Request, category: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by search category: {category}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await get_products_by_category(category)
         return products
     except HTTPException as http_err:
@@ -471,10 +557,14 @@ async def getByCategory(category: str):
 @app.get("/getByProductType/{product_type}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products by Product Type",
          description="Retrieve products based on a specific product type.")
-async def getBySearch(product_type: str):
+async def getBySearch(request: Request, product_type: str):
     try:
         LOG_SYS.write(
             TAG, f"Getting products by product type: {product_type}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await get_product_by_product_type(product_type)
         return products
     except HTTPException as http_err:
@@ -489,10 +579,14 @@ async def getBySearch(product_type: str):
 @app.get("/getBySearch/{search_string}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products by Search String",
          description="Retrieve products based on a specific search string.")
-async def getBySearch(search_string: str):
+async def getBySearch(request: Request, search_string: str):
     try:
         LOG_SYS.write(
             TAG, f"Getting products by search string: {search_string}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await get_product_by_search(search_string)
         return products
     except HTTPException as http_err:
@@ -507,10 +601,14 @@ async def getBySearch(search_string: str):
 @app.get("/sortingBy/{criteria}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Sort Products",
          description="Sort products based on a specified criteria and order.")
-async def sortingBy(criteria: str, asc: bool):
+async def sortingBy(request: Request, criteria: str, asc: bool):
     try:
         LOG_SYS.write(
             TAG, f"Sort products by a specific criteria: {criteria} and by asc: {asc}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         products = await sort_product(criteria, asc)
         return products
     except HTTPException as http_err:
@@ -525,10 +623,14 @@ async def sortingBy(criteria: str, asc: bool):
 @app.get("/getFilter", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Filter Products",
          description="Filter products based on optional category, search string, and criteria.")
-async def getFilter(category: str = None, search_string: str = None, criteria: str = None):
+async def getFilter(request: Request, category: str = None, search_string: str = None, criteria: str = None):
     try:
         LOG_SYS.write(TAG, f"Getting products by combo filter.")
         products = await filter_product(category, search_string, criteria)
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         return products
     except HTTPException as http_err:
         LOG_SYS.write(
@@ -542,10 +644,14 @@ async def getFilter(category: str = None, search_string: str = None, criteria: s
 @app.post("/insertProduct", status_code=201, tags=TAG_PRODUCTS,
           summary="Insert Product",
           description="Insert a new product into the database.")
-async def insertProduct(product: Product):
+async def insertProduct(request: Request, product: Product):
     try:
         LOG_SYS.write(
             TAG, f"Insert new product information with id: {product._id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await insert_product(product)
         return {"message": result}
     except HTTPException as http_err:
@@ -560,10 +666,14 @@ async def insertProduct(product: Product):
 @app.delete("/deleteProduct/{product_id}", status_code=200, tags=TAG_PRODUCTS,
             summary="Delete Product",
             description="Delete a specific product from the database by its identifier.")
-async def deleteProduct(product_id: str):
+async def deleteProduct(request: Request, product_id: str):
     try:
         LOG_SYS.write(
             TAG, f"Delete existing product information with id: {product_id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await delete_product(product_id)
         return {"message": result}
     except HTTPException as http_err:
@@ -575,12 +685,16 @@ async def deleteProduct(product_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/clearProducts", status_code=200, tags=TAG_USERS,
+@app.delete("/clearProducts", status_code=200, tags=TAG_PRODUCTS,
             summary="Delete All Products",
             description="Delete all products from the database.")
-async def clearProducts(auth: bool = Depends(authenticate)):
+async def clearProducts(request: Request, auth: bool = Depends(authenticate)):
     try:
         LOG_SYS.write(TAG, f"Clearing Products collection.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await clear_products()
         return {"message": result}
     except HTTPException as http_err:
@@ -595,10 +709,14 @@ async def clearProducts(auth: bool = Depends(authenticate)):
 @app.put("/updateProduct/{product_id}", status_code=200, tags=TAG_PRODUCTS,
          summary="Update Product",
          description="Update information of a specific product in the database by its identifier.")
-async def updateProduct(product_id: str, product: Product):
+async def updateProduct(request: Request, product_id: str, product: Product):
     try:
         LOG_SYS.write(
             TAG, f"Update existing product information with id: {product_id}.")
+        LOG_SYS.write(
+            TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(
+            TAG, f"-- Connected with client (ip): {request.client.host}.")
         result = await update_product(product_id, product)
         return {"message": result}
     except HTTPException as http_err:

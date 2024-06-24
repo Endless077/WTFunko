@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 from pydantic import BaseModel, Field
 
 class User(BaseModel):
-    id: Optional[int] = Field(-1, alias='_id', description="Unique identifier for the user")
+    id: Optional[str] = Field(-1, alias='_id', description="Unique identifier for the user")
     username: str = Field(..., description="Username of the user")
     email: str = Field(..., description="Email address of the user")
     password: str = Field(..., description="Password of the user")

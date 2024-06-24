@@ -114,7 +114,7 @@ async def get_user(username: str, email: str = None) -> User:
 async def insert_user(user_data: User, generate_uid: bool = True) -> str:
     # Collection Users
     collection = DATABASE["Users"]
-
+    
     # Check if the user already exists
     existing_user_username = collection.find_one(
         {"username": user_data.username})
@@ -135,13 +135,13 @@ async def insert_user(user_data: User, generate_uid: bool = True) -> str:
     else:
         while (True):
             # Generate a UID string for the user
-            user_data.id = generate_unique_id(length=13, alphanumeric=False)
+            user_data.id = generate_unique_id(length=13, alphanumeric=True)
 
             # Check if order already exist
             existing_user_id = collection.find_one({"_id": user_data.id})
             if not existing_user_id:
                 break
-
+    
     # Hashing the user password in bcrypt hash algorithm
     user_data.password = hash_string(user_data.password)
 
@@ -637,7 +637,7 @@ async def insert_product(product_data: Product, generate_uid: bool = True) -> st
     else:
         while (True):
             # Generate a UID string for the product
-            product_data.id = generate_unique_id(length=13, alphanumeric=True)
+            product_data.id = generate_unique_id(length=13, alphanumeric=False)
 
             # Check if product already exist (if false break the while)
             existing_product = collection.find_one({"_id": product_data.id})
