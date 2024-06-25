@@ -12,6 +12,9 @@ import "../node_modules/font-awesome/css/font-awesome.min.css";
 // Main App
 import App from "./App.jsx";
 
+// NotFound
+import NotFound from "./components/NotFound.jsx";
+
 // Product
 import Cart from "./components/CartComponent/Cart.jsx";
 import ProductInfo from "./components/ProductComponent/ProductInfoComponent/ProductInfo.jsx";
@@ -45,6 +48,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           {routes.map(({ path, element }, index) => (
             <Route key={index} path={path} element={element} />
           ))}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </DevSupport>

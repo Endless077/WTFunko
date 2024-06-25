@@ -12,6 +12,7 @@ import { config, fetchData } from "../../utils";
 
 export const Products = () => {
   const uniqueProductsCountKey = "Products Count";
+  const [amountProductPage] = useState(20);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,13 +22,13 @@ export const Products = () => {
   const currentPage = parseInt(queryParams.get("page")) || 0;
   const currentCategory = queryParams.get("category") || "All";
   const currentSearchTerm = queryParams.get("searchTerm") || "";
-  const currentSortingCriteria = queryParams.get("sortingCriteria") || Criteria.DEFAULT;
+  const currentSortingCriteria =
+    queryParams.get("sortingCriteria") || Criteria.DEFAULT;
 
   const [cart, setCart] = useState([]);
-  const [productsPerPage] = useState(20);
+  const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   /* ********************************************************************************************* */
@@ -185,7 +186,7 @@ export const Products = () => {
     const uniqueProductsCountResult = localStorage.getItem(
       uniqueProductsCountKey
     );
-    const totalPages = Math.ceil(uniqueProductsCountResult / productsPerPage);
+    const totalPages = Math.ceil(uniqueProductsCountResult / amountProductPage);
     const maxPageDisplay = 10;
     const startPage = Math.floor(currentPage / maxPageDisplay) * maxPageDisplay;
     const endPage = Math.min(startPage + maxPageDisplay, totalPages);

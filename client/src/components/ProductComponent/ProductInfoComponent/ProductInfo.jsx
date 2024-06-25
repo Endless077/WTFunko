@@ -10,8 +10,8 @@ import { config, fetchData } from "../../../utils";
 
 const ProductInfo = () => {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
   const [cart, setCart] = useState([]);
+  const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   const navigate = useNavigate();
@@ -19,6 +19,13 @@ const ProductInfo = () => {
   /* ********************************************************************************************* */
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      const mainProduct = await fetchProduct(id);
+      const relProducts = await fetchRelatedProducts(mainProduct);
+      setProduct(mainProduct);
+      setRelatedProducts(relProducts);
+    };
+
     try {
       fetchProducts();
     } catch (error) {
@@ -33,35 +40,6 @@ const ProductInfo = () => {
     };
     fetchCart();
   }, []);
-
-  const fetchProducts = async () => {
-    const mainProduct = await fetchProduct(id);
-    setProduct(mainProduct);
-    const relProducts = await fetchRelatedProducts(mainProduct);
-    setRelatedProducts(relProducts);
-  };
-
-  const handleCategoryClick = (category) => {
-    navigate(
-      `/?category=${category}&searchTerm=&sortingCriteria=Default&page=0`
-    );
-  };
-
-  const handleProductTypeClick = (product_type) => {
-    navigate(
-      `/?category=&searchTerm=${product_type}&sortingCriteria=Default&page=0`
-    );
-  };
-
-  const fetchRelatedProducts = async (mainProduct) => {
-    const relatedProductsIds = mainProduct.related.slice(0, 3);
-    const relProducts = [];
-    for (let i = 0; i < relatedProductsIds.length; i++) {
-      const relatedProduct = await fetchProduct(relatedProductsIds[i]);
-      relProducts[i] = relatedProduct;
-    }
-    return relProducts;
-  };
 
   const fetchProduct = async (productId) => {
     try {
@@ -95,6 +73,16 @@ const ProductInfo = () => {
         text: error.message,
       });
     }
+  };
+
+  const fetchRelatedProducts = async (mainProduct) => {
+    const relatedProductsIds = mainProduct.related.slice(0, 3);
+    const relProducts = [];
+    for (let i = 0; i < relatedProductsIds.length; i++) {
+      const relatedProduct = await fetchProduct(relatedProductsIds[i]);
+      relProducts[i] = relatedProduct;
+    }
+    return relProducts;
   };
 
   const addToCart = (product, quantity = 1) => {
@@ -131,6 +119,18 @@ const ProductInfo = () => {
     }
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  const handleCategoryClick = (category) => {
+    navigate(
+      `/?category=${category}&searchTerm=&sortingCriteria=Default&page=0`
+    );
+  };
+
+  const handleProductTypeClick = (product_type) => {
+    navigate(
+      `/?category=&searchTerm=${product_type}&sortingCriteria=Default&page=0`
+    );
   };
 
   const handleQuantityChange = (productId, cartQuantity, maxQuantity) => {

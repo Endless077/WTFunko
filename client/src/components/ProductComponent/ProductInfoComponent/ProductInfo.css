@@ -5,35 +5,34 @@
   justify-content: center;
 }
 
+/* Product Info Styles */
+.product-info {
+  margin-top: 20px;
+}
+
 /* Image Styles */
 .img-fluid {
   height: auto;
   max-width: 100%;
 }
 
-/* Product Info Styles */
-.product-info {
-  margin-top: 20px;
-}
-
-.no-related {
-  font-size: medium;
-  font-weight: bold;
-  color: #ff6b6b;
-  margin-top: 20px;
-}
-
+/* Text Styles */
 .fixed-height-description {
-  margin-top: 10px; /* Rimuovi il margine superiore */
-  height: 200px; /* Altezza massima */
-  overflow: auto; /* Abilita lo scrolling se il contenuto supera l'altezza massima */
+  height: 200px;
+  margin-top: 10px;
+  overflow: auto;
   text-align: justify;
 }
 
 .fixed-height-text {
-  height: 50px; /* Altezza fissa desiderata */
+  font-size: calc(1em + 0.5vw);
+  height: 50px;
   margin-bottom: 20px;
-  font-size: calc(
-    1em + 0.5vw
-  ); /* Calcolo del font size in base alla larghezza della viewport */
+}
+
+.no-related {
+  color: #ff6b6b;
+  font-size: medium;
+  font-weight: bold;
+  margin-top: 20px;
 }

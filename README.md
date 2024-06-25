@@ -141,8 +141,8 @@ This project is licensed under the GNU General Public License v3.0. For more det
 ## Authors
 
 **Contributors:**
-- [Luciano Bercini](https://github.com/Luciano-Bercini)
 - [Marco Palmisciano](https://github.com/JewDaiko)
+- [Luciano Bercini](https://github.com/Luciano-Bercini)
 
 **Project Manager:**
 - [Antonio Garofalo](https://github.com/Endless077)

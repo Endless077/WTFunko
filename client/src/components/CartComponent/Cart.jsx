@@ -22,11 +22,15 @@ const CartPage = () => {
   /* ********************************************************************************************* */
 
   useEffect(() => {
-    const username = JSON.parse(localStorage.getItem("user")).username
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      const username = storedUser.username;
+      setUsername(username);
+    }
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(storedCart);
-    setUsername(username)
   }, []);
+  
 
   const updateQuantity = (productId, newQuantity) => {
     const updatedCart = cart.map((item) => {
