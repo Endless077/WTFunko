@@ -15,3 +15,25 @@
 .product-info {
   margin-top: 20px;
 }
+
+.no-related {
+  font-size: medium;
+  font-weight: bold;
+  color: #ff6b6b;
+  margin-top: 20px;
+}
+
+.fixed-height-description {
+  margin-top: 10px; /* Rimuovi il margine superiore */
+  height: 200px; /* Altezza massima */
+  overflow: auto; /* Abilita lo scrolling se il contenuto supera l'altezza massima */
+  text-align: justify;
+}
+
+.fixed-height-text {
+  height: 50px; /* Altezza fissa desiderata */
+  margin-bottom: 20px;
+  font-size: calc(
+    1em + 0.5vw
+  ); /* Calcolo del font size in base alla larghezza della viewport */
+}

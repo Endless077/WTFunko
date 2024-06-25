@@ -145,11 +145,11 @@ async def deleteAccount(request: Request, username: str):
             TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(
             TAG, f"-- Connected with client (ip): {request.client.host}.")
-        resultOrders = await delete_order_by_username(username)
+        resultOrders = await delete_orders_by_username(username)
 
         LOG_SYS.write(
             TAG, f"Delete all user data with username: {username}")
-        resultUser = await delete_existing_user(username)
+        resultUser = await delete_user(username)
 
         result = f"{resultUser} & {resultOrders}"
         return {"message": result}
@@ -379,7 +379,7 @@ async def deleteOrder(request: Request, username: str):
             TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(
             TAG, f"-- Connected with client (ip): {request.client.host}.")
-        result = await delete_order_by_username(username)
+        result = await delete_orders_by_username(username)
         return {"message": result}
     except HTTPException as http_err:
         LOG_SYS.write(

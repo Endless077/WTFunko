@@ -1,7 +1,7 @@
 // ProductInfo Component
 import React, { useEffect, useState } from "react";
 import { Navbar } from "../../Navbar";
-import { useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Utils
 import "./ProductInfo.css";
@@ -12,47 +12,15 @@ const ProductInfo = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [cart, setCart] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const navigate = useNavigate();
 
   /* ********************************************************************************************* */
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const endpointUrl = config.endpoints.getByID.url;
-        const method = config.endpoints.getByID.method;
-        const pathParams = {
-          product_id: id,
-        };
-
-        const getProductResponse = await fetchData(
-          endpointUrl,
-          method,
-          undefined,
-          pathParams
-        );
-
-        const getProductResponseData = await getProductResponse.json();
-
-        if (!getProductResponse.ok) {
-          throw new Error(
-            getProductResponseData.detail ||
-              "Product loading failed. Please try again later."
-          );
-        }
-
-        setProduct(getProductResponseData);
-      } catch (error) {
-        console.error("Error product fetch:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error during product loading",
-          text: error.message,
-        });
-      }
-    };
-
     try {
-      fetchProduct();
+      fetchProducts();
     } catch (error) {
       console.error("Error fetching product:", error);
     }
@@ -65,6 +33,69 @@ const ProductInfo = () => {
     };
     fetchCart();
   }, []);
+
+  const fetchProducts = async () => {
+    const mainProduct = await fetchProduct(id);
+    setProduct(mainProduct);
+    const relProducts = await fetchRelatedProducts(mainProduct);
+    setRelatedProducts(relProducts);
+  };
+
+  const handleCategoryClick = (category) => {
+    navigate(
+      `/?category=${category}&searchTerm=&sortingCriteria=Default&page=0`
+    );
+  };
+
+  const handleProductTypeClick = (product_type) => {
+    navigate(
+      `/?category=&searchTerm=${product_type}&sortingCriteria=Default&page=0`
+    );
+  };
+
+  const fetchRelatedProducts = async (mainProduct) => {
+    const relatedProductsIds = mainProduct.related.slice(0, 3);
+    const relProducts = [];
+    for (let i = 0; i < relatedProductsIds.length; i++) {
+      const relatedProduct = await fetchProduct(relatedProductsIds[i]);
+      relProducts[i] = relatedProduct;
+    }
+    return relProducts;
+  };
+
+  const fetchProduct = async (productId) => {
+    try {
+      const endpointUrl = config.endpoints.getByID.url;
+      const method = config.endpoints.getByID.method;
+      const pathParams = {
+        product_id: productId,
+      };
+
+      const getProductResponse = await fetchData(
+        endpointUrl,
+        method,
+        undefined,
+        pathParams
+      );
+
+      const getProductResponseData = await getProductResponse.json();
+
+      if (!getProductResponse.ok) {
+        throw new Error(
+          getProductResponseData.detail ||
+            "Product loading failed. Please try again later."
+        );
+      }
+      return getProductResponseData;
+    } catch (error) {
+      console.error("Error product fetch:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error during product loading",
+        text: error.message,
+      });
+    }
+  };
 
   const addToCart = (product, quantity = 1) => {
     let updatedCart;
@@ -130,10 +161,10 @@ const ProductInfo = () => {
   return (
     <>
       <Navbar />
-      <div className="container my-5 py-5">
+      <div className="container my-3 py-3">
         <div className="row">
           <div className="col-md-6">
-            <div className="card h-100 text-center p-4">
+            <div className="card h-100 text-center p-4 border-3">
               <img
                 src={product.img}
                 className="card-img-top"
@@ -145,11 +176,27 @@ const ProductInfo = () => {
             </div>
           </div>
           <div className="col-md-6 d-flex flex-column justify-content-center">
-            {/*TODO : AGGIUNGERE L' h2 CON L'INTEREST DEL PRODOTTO (LISTA)*/}
-            {/*TODO : AGGIUNGERE L' h3 CON IL PRODUCT TYPE DEL PRODOTTO (LISTA)*/}
-            <h1 className="display-5">{product.title}</h1>
-            <p className="lead">{product.description}</p>
-            <h3 className="my-4">${product.price}</h3>
+            <h1 className="fixed-height-text">{product.title}</h1>
+            <div>
+              <button
+                onClick={() => handleCategoryClick(product.interest[0])}
+                className="btn btn-link p-0"
+              >
+                <h5>{product.interest[0]}</h5>
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={() => handleProductTypeClick(product.product_type)}
+                className="btn btn-link p-0"
+              >
+                <h5>{product.product_type}</h5>
+              </button>
+            </div>
+            <div className="fixed-height-description">
+              <p className="lead">{product.description}</p>
+            </div>
+            <h3 className="my-2">${product.price}</h3>
             {product.quantity > 0 ? (
               cart.some((item) => item._id === product._id) ? (
                 <div>
@@ -187,9 +234,32 @@ const ProductInfo = () => {
             ) : (
               <p className="text-danger fw-bold mb-0">Out of Stock</p>
             )}
+            <div className="row mt-3">
+              <h3>Related Products</h3>
+              {relatedProducts.length > 0 ? (
+                relatedProducts.map((relatedProduct) => (
+                  <div key={relatedProduct._id} className="col-md-4">
+                    <div className="card h-100 text-center p-4">
+                      <Link to={`/productInfo/${relatedProduct._id}`}>
+                        <img
+                          src={relatedProduct.img}
+                          className="card-img-top"
+                          alt={relatedProduct.title}
+                          style={{ cursor: "pointer" }}
+                          onError={(e) =>
+                            (e.target.src = "/assets/Funko_Placeholder.png")
+                          }
+                        />
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="no-related">No Funko Pop related</p>
+              )}
+            </div>
           </div>
         </div>
-        {/*TODO : AGGIUNGERE LA PARTE IN CUI FA VEDERE LE IMMAGINI DEI FUNKO RELATED (ID)*/}
       </div>
     </>
   );

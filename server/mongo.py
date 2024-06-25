@@ -162,12 +162,6 @@ async def delete_user(username: str) -> str:
         TAG, f"Deleting user data with username: {username} from the database.")
     result = collection.delete_one({"username": username})
 
-    # Check if user was found and deleted
-    if result.deleted_count == 0:
-        LOG_SYS.write(
-            TAG, f"Delete existing user with username: {username} failed, user not found.")
-        raise HTTPException(status_code=404, detail="User not found")
-
     # Return success message
     LOG_SYS.write(TAG, "User data deleted successfully.")
     return "User deleted successfully."
@@ -304,20 +298,13 @@ async def delete_order_by_id(order_id: str) -> str:
     return "Order deleted successfully."
 
 
-async def delete_order_by_username(username: str) -> str:
-    # Collection Orders
+async def delete_orders_by_username(username: str) -> str:
     collection = DATABASE["Orders"]
 
     # Delete one funcion to update the new order info
     LOG_SYS.write(
         TAG, f"Deleting order data with username: {username} from the database.")
     result = collection.delete_many({"user.username": username})
-
-    # Check if order was found and deleted
-    if result.deleted_count == 0:
-        LOG_SYS.write(
-            TAG, f"Delete existing order with username: {username} failed, order not found.")
-        raise HTTPException(status_code=404, detail="Orders not found")
 
     # Return success message
     LOG_SYS.write(TAG, "Order data deleted successfully.")
@@ -413,7 +400,8 @@ def getCombinedFilter(category: str, searchTerm: str) -> dict:
     search_filter = {
         "$or": [
             {"title": {"$regex": searchTerm, "$options": "i"}},
-            {"description": {"$regex": searchTerm, "$options": "i"}}
+            {"description": {"$regex": searchTerm, "$options": "i"}},
+            {"product_type": {"$regex": searchTerm, "$options": "i"}}
         ]
     }
 
