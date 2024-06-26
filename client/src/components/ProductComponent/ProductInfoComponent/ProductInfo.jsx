@@ -51,6 +51,7 @@ const ProductInfo = () => {
 
       const getProductResponse = await fetchData(
         endpointUrl,
+        undefined,
         method,
         undefined,
         pathParams

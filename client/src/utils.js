@@ -2,6 +2,7 @@
 export const getApiUrl = (endpoint) =>
   `http://${config.api_url}:${config.api_port}${endpoint}`;
 
+
 // Function to replace URL Params (if exists)
 export function replaceUrlParams(url, params) {
   Object.keys(params).forEach((key) => {
@@ -10,9 +11,11 @@ export function replaceUrlParams(url, params) {
   return url;
 }
 
-// General base Fetch data function
+
+// General base fetch data function
 export async function fetchData(
-  endpoint,
+  endpoint = "/",
+  headers = { "Content-Type": "application/json" },
   method = "GET",
   queryParams = {},
   pathParams = {},
@@ -33,10 +36,8 @@ export async function fetchData(
 
     // Prepare the fetch options
     const fetchOptions = {
+      headers,
       method,
-      headers: {
-        "Content-Type": "application/json",
-      },
     };
 
     // If the method is not GET and a payload is provided, include it in the request body
@@ -58,6 +59,30 @@ export async function fetchData(
   }
 }
 
+
+// Retrive Token Function
+export async function retrieveToken() {
+  try {
+    // Create the baseUrl of the /retriveToken endpoint
+    const baseUrl = new URL(getApiUrl("/retriveTorken"));
+
+    // Create fetchOptions of the /retriveToken endpoint
+    const fetchOptions = {
+      headers: { "Content-Type": "application/json" },
+      method: "GET",
+    };
+
+    // Fetch token using the constructed URL and fetch options
+    const response = await fetch(baseUrl.toString(), fetchOptions);
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    // Rethrow the error to be handled by the calling function
+    throw error;
+  }
+}
+
+
 // API Dictionary (not all entries)
 export const config = {
   api_url: "localhost",
@@ -65,7 +90,6 @@ export const config = {
   endpoints: {
     login: { url: "/login", method: "POST" },
     signup: { url: "/signup", method: "POST" },
-    getUser: { url: "/getUser", method: "GET" },
     deleteAccount: { url: "/deleteAccount/{username}", method: "DELETE" },
     updateUser: { url: "/updateUser", method: "PUT" },
     getUserOrders: { url: "/getUserOrders", method: "GET" },

@@ -1,8 +1,8 @@
 {
-  "admin_1": {
-    "_id": "#ID1",
+  "admin": {
+    "_id": "admin",
     "username": "admin",
     "email": "funko@unisa.it",
-    "password": "admin"
+    "password": "$2b$12$Xd/2/XfqDrocaNXf7p9FBOcPH5YafLJvUqE7R5jwLDvHpRRQfKDku"
   }
 }

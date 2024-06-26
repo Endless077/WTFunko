@@ -84,16 +84,34 @@ def populate_database():
 ###################################################################################################
 
 
+async def get_all_users():
+    # Collection Users
+    collection = DATABASE["Users"]
+
+    # Query to find all Product info in the collection
+    LOG_SYS.write(TAG, "Query to get all users executing.")
+    users_data = list(collection.find())
+    if not users_data:
+        LOG_SYS.write(TAG, "No Users found.")
+        return []
+
+    # Build a list of instances of User using the data retrieved from the database
+    users = [User(**user) for user in users_data]
+    LOG_SYS.write(TAG, f"Found {len(users_data)} users.")
+    return users
+
+
 async def get_user(username: str, email: str = None) -> User:
     # Collection Users
     collection = DATABASE["Users"]
+    
     # Execute the query to find the user in the collection by username or password
     LOG_SYS.write(TAG, f"Query to get user information by username: {username} or email: {email} executing.")
     query = {"username": username}
     if email is not None:
         query = {"$or": [{"username": username}, {"email": email}]}
     user_data = collection.find_one(query)
-
+    
     # If the user is not found in the database, raise an exception
     if user_data is None:
         LOG_SYS.write(    TAG, f"Query to get user information by username: {username} or email: {email} failed, user not found.")
@@ -102,6 +120,7 @@ async def get_user(username: str, email: str = None) -> User:
     # Build an instance of User using the data retrieved from the database
     LOG_SYS.write(TAG, f"Query to get user information by username: {username} or email: {email} success.")
     user = User(**user_data)
+    user.token = "unauthorized"
     return user
 
 
@@ -138,11 +157,11 @@ async def insert_user(user_data: User, generate_uid: bool = True) -> str:
     user_data.password = hash_string(user_data.password)
 
     # Insert one new user data into the collection
-    result = collection.insert_one(user_data.model_dump(by_alias=True))
+    result = collection.insert_one(user_data.model_dump(by_alias=True, exclude={"token"}))
 
     # Return success message
     LOG_SYS.write(TAG, "User data insert successfully.")
-    return f"User {user_data.username} inserted successfully."
+    return user_data
 
 
 async def delete_user(username: str) -> str:
@@ -172,14 +191,16 @@ async def clear_users() -> str:
     return "Users collection cleared successfully."
 
 
-async def update_user(username: str, user_data: User) -> str:
+async def update_user(username: str, user_data: Optional[Union[Order, Dict[str, Any]]]) -> str:
     # Collection Users
     collection = DATABASE["Users"]
 
     # Update user data in the collection
-    LOG_SYS.write(TAG, f"Updating user data with username: {username} in the database.")
-    result = collection.update_one({"username": username}, {
-                                   "$set": user_data.model_dump()})
+    newOrderData = user_data.model_dump() if isinstance(user_data, Product) else user_data
+
+    LOG_SYS.write(TAG, f"Updating product data with id: {username} in the datbase.")
+    result = collection.update_one(
+        {"_id": username}, {"$set": newOrderData})
 
     # Check if user was found and updated
     if result.matched_count == 0:
@@ -194,7 +215,24 @@ async def update_user(username: str, user_data: User) -> str:
 ###################################################################################################
 
 
-async def get_orders(username: str) -> List[Order]:
+async def get_all_orders():
+    # Collection Users
+    collection = DATABASE["Orders"]
+
+    # Query to find all Product info in the collection
+    LOG_SYS.write(TAG, "Query to get all users executing.")
+    orders_data = list(collection.find())
+    if not orders_data:
+        LOG_SYS.write(TAG, "No Orders found.")
+        return []
+
+    # Build a list of instances of Order using the data retrieved from the database
+    users = [Order(**order) for order in orders_data]
+    LOG_SYS.write(TAG, f"Found {len(orders_data)} orders.")
+    return users
+
+
+async def get_orders_by_username(username: str) -> List[Order]:
     # Collection Orders
     collection = DATABASE["Orders"]
 
@@ -260,7 +298,7 @@ async def insert_order(order_data: Order, generate_uid: bool = True) -> str:
 
     # Insert one new order data into database
     result = collection.insert_one(order_data.model_dump(by_alias=True))
-
+    
     # Return success message
     LOG_SYS.write(TAG, "Order data insert successfully.")
     return f"Order {order_data.id} by user {order_data.user.username} inserted successfully."
@@ -308,11 +346,17 @@ async def clear_orders() -> str:
     return "Orders collection cleared successfully."
 
 
-async def update_order(order_id: str, order_data: Order) -> str:
+async def update_order(order_id: str, order_data: Optional[Union[Order, Dict[str, Any]]]) -> str:
     # Collection Orders
     collection = DATABASE["Orders"]
 
-    # Update one funcion to update the new order info
+    # Update order data in the collection
+    newOrderData = order_data.model_dump() if isinstance(order_data, Product) else order_data
+
+    LOG_SYS.write(TAG, f"Updating product data with id: {order_id} in the datbase.")
+    result = collection.update_one(
+        {"_id": order_id}, {"$set": newOrderData})
+    
     LOG_SYS.write(TAG, f"Updating order data with id: {order_id} in the database.")
     result = collection.update_one(
         {"_id": order_id}, {"$set": order_data.model_dump()})
@@ -335,46 +379,12 @@ AMOUNT_PRODUCT_PAGE = 20
 
 async def get_unique_products_count(category: str, searchTerm: str) -> int:
     # Collection Products
-    products = DATABASE["Products"]
+    collection = DATABASE["Products"]
 
     # Getting cutom filter and count occurrence
     filter = getCombinedFilter(category, searchTerm)
-    count = products.count_documents(filter)
+    count = collection.count_documents(filter)
     return count
-
-
-async def get_products(category: str, searchTerm: str, criteria: Criteria, pageIndex: int) -> List[Product]:
-    # Collection Products
-    products = DATABASE["Products"]
-
-    # Get a filter and sorting rule
-    LOG_SYS.write(TAG, "Creating a combined custom filter and sorter.")
-    filter = getCombinedFilter(category, searchTerm)
-    sort = getCriteriaSorting(criteria)
-
-    # Setup max page and range index
-    count = await get_unique_products_count(category, searchTerm)
-    if count == 0:
-        LOG_SYS.write(TAG, "No Products found.")
-        return []
-    max_pages = math.ceil(count / 20.0)
-    if pageIndex < 0 or pageIndex > max_pages - 1:
-        raise ValueError("Invalid pages range specified.")
-
-    # Query to find Products info in the collection by pageIndex
-    LOG_SYS.write(TAG, "Query to get products pages executing.")
-    start_range = pageIndex * AMOUNT_PRODUCT_PAGE
-    end_range = min((pageIndex + 1) * AMOUNT_PRODUCT_PAGE, count)
-
-    product_data = list(products.find(filter).sort(sort).skip(start_range).limit(end_range - start_range))
-    if not product_data:
-        LOG_SYS.write(TAG, "No Products found.")
-        return []
-
-    # Build a list of instances of Product using the data retrieved from the database
-    products = [Product(**product) for product in product_data]
-    LOG_SYS.write(TAG, f"Found {len(products)} products.")
-    return products
 
 
 def getCombinedFilter(category: str, searchTerm: str) -> dict:
@@ -395,11 +405,45 @@ def getCombinedFilter(category: str, searchTerm: str) -> dict:
 
 async def get_all_products() -> List[Product]:
     # Collection Products
-    products = DATABASE["Products"]
+    collection = DATABASE["Products"]
 
     # Query to find all Product info in the collection
     LOG_SYS.write(TAG, "Query to get all products executing.")
-    product_data = list(products.find())
+    products_data = list(collection.find())
+    if not products_data:
+        LOG_SYS.write(TAG, "No Products found.")
+        return []
+
+    # Build a list of instances of Product using the data retrieved from the database
+    products = [Product(**product) for product in products_data]
+    LOG_SYS.write(TAG, f"Found {len(products)} products.")
+    return products
+
+
+async def get_products(category: str, searchTerm: str, criteria: Criteria, pageIndex: int) -> List[Product]:
+    # Collection Products
+    collection = DATABASE["Products"]
+
+    # Get a filter and sorting rule
+    LOG_SYS.write(TAG, "Creating a combined custom filter and sorter.")
+    filter = getCombinedFilter(category, searchTerm)
+    sort = getCriteriaSorting(criteria)
+
+    # Setup max page and range index
+    count = await get_unique_products_count(category, searchTerm)
+    if count == 0:
+        LOG_SYS.write(TAG, "No Products found.")
+        return []
+    max_pages = math.ceil(count / 20.0)
+    if pageIndex < 0 or pageIndex > max_pages - 1:
+        raise ValueError("Invalid pages range specified.")
+
+    # Query to find Products info in the collection by pageIndex
+    LOG_SYS.write(TAG, "Query to get products pages executing.")
+    start_range = pageIndex * AMOUNT_PRODUCT_PAGE
+    end_range = min((pageIndex + 1) * AMOUNT_PRODUCT_PAGE, count)
+
+    product_data = list(collection.find(filter).sort(sort).skip(start_range).limit(end_range - start_range))
     if not product_data:
         LOG_SYS.write(TAG, "No Products found.")
         return []
@@ -410,13 +454,13 @@ async def get_all_products() -> List[Product]:
     return products
 
 
-async def get_product_by_id(product_id) -> Product:
+async def get_product_by_id(product_id: int) -> Product:
     # Collection Products
-    products = DATABASE["Products"]
+    collection = DATABASE["Products"]
 
     # Query to find Product info in the collection by id
     LOG_SYS.write(TAG, f"Query to get products info for id: {product_id} executing.")
-    products_data = products.find_one({"_id": product_id})
+    products_data = collection.find_one({"_id": product_id})
     if products_data is None:
         LOG_SYS.write(TAG, f"Product with id: {product_id} not found.")
         raise HTTPException(status_code=404, detail="Product not found.")
@@ -584,7 +628,7 @@ async def insert_product(product_data: Product, generate_uid: bool = True) -> st
     return f"Product {product_data.id} inserted successfully."
 
 
-async def delete_product(product_id: str) -> str:
+async def delete_product(product_id: int) -> str:
     # Collection Products
     collection = DATABASE["Products"]
 
@@ -611,18 +655,35 @@ async def clear_products() -> str:
     return "Products collection cleared successfully."
 
 
-async def update_product(product_id: str, product_data: Product) -> str:
+async def update_product_warehouse(products: List[Optional[Union[OrderPorduct, Dict[str, Any]]]]):
+    # Collection Products
+    collection = DATABASE["Products"]
+
+    # Update product quantity in the collection
+    for product in products:
+        LOG_SYS.write(TAG, f"Updateing {product.id} stock in the warehouse.")
+        amount_value = product.amount
+        quantity_value = collection.find_one({"_id": product.id}, {"quantity": 1}).get("quantity", 0)
+        restock = max(quantity_value - amount_value, 0)
+        await update_product(product.id, {"quantity": restock})
+      
+    return "All quantity product in the warehouse are updated."
+
+
+async def update_product(product_id: int, product_data: Optional[Union[Product, Dict[str, Any]]]) -> str:
     # Collection Products
     collection = DATABASE["Products"]
 
     # Update product data in the collection
+    newProductData = product_data.model_dump() if isinstance(product_data, Product) else product_data
+
     LOG_SYS.write(TAG, f"Updating product data with id: {product_id} in the datbase.")
     result = collection.update_one(
-        {"_id": product_id}, {"$set": product_data.model_dump()})
+        {"_id": product_id}, {"$set": newProductData})
 
     # Check if product was found and updated
     if result.matched_count == 0:
-        LOG_SYS.write(    TAG, f"Updating existing product with id: {product_data.id} failed, product not found.")
+        LOG_SYS.write(TAG, f"Updating existing product with id: {product_id} failed, product not found.")
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Return success message

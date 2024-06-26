@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 # Security & Middleware
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 import secrets
 
@@ -26,8 +26,9 @@ from mongo import *
 LOG_SYS = get_logger()
 TAG = "FastAPI"
 
-ADMIN_ACCESS = secrets.token_hex(16)
+USER_TOKEN = secrets.token_hex(16)
 ADMIN_TOKEN = secrets.token_hex(16)
+TAG_ADMIN = ["Admin"]
 
 app = FastAPI(title="FastAPI - WTFunko",
               description="A simple and fast api suite for WTFunko e-commerce.",
@@ -46,7 +47,7 @@ app = FastAPI(title="FastAPI - WTFunko",
               version="1.0"
               )
 
-security = HTTPBasic()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 origins = [
     "http://127.0.0.1",
@@ -66,16 +67,21 @@ app.add_middleware(
 )
 
 
-def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
-    correct_username = secrets.compare_digest(
-        credentials.username, ADMIN_ACCESS)
-    correct_password = secrets.compare_digest(
-        credentials.password, ADMIN_TOKEN)
-    if not (correct_username and correct_password):
+def admin_access(token: str = Depends(oauth2_scheme)):
+    if token != ADMIN_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Basic"},
+            detail="Uauthorized Admin Access",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return True
+
+def user_access(token: str = Depends(oauth2_scheme)):
+    if token != USER_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Uauthorized User Access",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     return True
 
@@ -88,12 +94,14 @@ TAG_USERS = ["Users"]
 @app.post("/login", status_code=200, response_model=UserInfo, tags=TAG_USERS,
           summary="User Login",
           description="Authenticate a user with a username and password, returning user information upon successful login.")
-async def login(request: Request, user: User):
+async def login(request: Request,
+                user: User):
     try:
         LOG_SYS.write(TAG, f"Login user with username: {user.username} and password: {user.password}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
         user_data = await get_user(user.username)
+        user_data.token = USER_TOKEN
 
         if hash_string_match(user.password, user_data.password):
             return user_data
@@ -109,15 +117,18 @@ async def login(request: Request, user: User):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/signup", status_code=201, tags=TAG_USERS,
+@app.post("/signup", status_code=201, response_model=UserInfo, tags=TAG_USERS,
           summary="User Signup",
           description="Create a new user account with the provided details.")
-async def signup(request: Request, user: User):
+async def signup(request: Request,
+                 user: User):
     try:
         LOG_SYS.write(TAG, f"Signup user with username: {user.username} and email: {user.email}")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
-        return await insert_user(user)
+        user_data = await insert_user(user)
+        user_data.token = USER_TOKEN
+        return user_data
     except HTTPException as http_err:
         LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
@@ -129,7 +140,9 @@ async def signup(request: Request, user: User):
 @app.delete("/deleteAccount/{username}", status_code=200, tags=TAG_USERS,
             summary="User Account Delete",
             description="Delete a existing user account with the provided details.")
-async def deleteAccount(request: Request, username: str):
+async def deleteAccount(request: Request,
+                        username: str,
+                        auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Delete all user orders with username: {username}")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -150,17 +163,55 @@ async def deleteAccount(request: Request, username: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/getUser", status_code=200, response_model=User, tags=TAG_USERS,
+@app.get("/retriveTorken", status_code=200, tags=TAG_USERS,
+         summary="Retrieve an access token.",
+         description="Retrieve an access token for authentication.")
+async def retriveTorken(request: Request):
+    try:
+        LOG_SYS.write(TAG, f"Getting an user token instance.")
+        LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
+        return USER_TOKEN
+    except HTTPException as http_err:
+        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/getAllUsers", response_model=List[User], status_code=200, tags=TAG_ADMIN,
+         summary="Get All Users",
+         description="Retrieve all users available in the database.")
+async def getAllUsers(request: Request,
+                      auth: bool = Depends(admin_access)):
+    try:
+        LOG_SYS.write(TAG, f"Getting all users from Database.")
+        LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
+        users = await get_all_users()
+        return users
+    except HTTPException as http_err:
+        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/getUser", status_code=200, response_model=User, tags=TAG_ADMIN,
          summary="Get User Information",
          description="Retrieve user information by username or email.")
 async def getUser(request: Request,
                   username: str = Query(..., description="The username of the user to retrieve."),
-                  email: str = Query(None, description="The email of the user to retrieve. If not provided, the user will be retrieved by username.")):
+                  email: str = Query(None, description="The email of the user to retrieve. If not provided, the user will be retrieved by username."),
+                  auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Getting user information with username: {username} or email: {email}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
         user_data = await get_user(username, email)
+        user_data.token = USER_TOKEN
         return user_data
     except HTTPException as http_err:
         LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
@@ -173,7 +224,8 @@ async def getUser(request: Request,
 @app.post("/insertUser", status_code=201, tags=TAG_USERS,
           summary="Insert New User",
           description="Insert a new user into the database with the provided information.")
-async def insertUser(request: Request, user: User):
+async def insertUser(request: Request,
+                     user: User):
     try:
         LOG_SYS.write(TAG, f"Insert new user information with username: {user.username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -191,7 +243,9 @@ async def insertUser(request: Request, user: User):
 @app.delete("/deleteUser/{username}", status_code=200, tags=TAG_USERS,
             summary="Delete User",
             description="Delete a user from the database by username.")
-async def delete_existing_user(request: Request, username: str):
+async def delete_existing_user(request: Request,
+                               username: str,
+                               auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Delete existing user information with username: {username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -206,10 +260,11 @@ async def delete_existing_user(request: Request, username: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/clearUsers", status_code=200, tags=TAG_USERS,
+@app.delete("/clearUsers", status_code=200, tags=TAG_ADMIN,
             summary="Delete All Users",
             description="Delete all users from the database.")
-async def clearUsers(request: Request, auth: bool = Depends(authenticate)):
+async def clearUsers(request: Request,
+                     auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Clearing Users collection.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -224,10 +279,13 @@ async def clearUsers(request: Request, auth: bool = Depends(authenticate)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/updateUser", status_code=200, tags=TAG_USERS,
+@app.put("/updateUser", status_code=200, tags=TAG_ADMIN,
          summary="Update User Information",
          description="Update the information of a specific user by username.")
-async def updateUser(request: Request, username: str, user: User, auth: bool = Depends(authenticate)):
+async def updateUser(request: Request,
+                     username: str,
+                     user: Optional[Union[User, Dict[str, Any]]],
+                     auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Update existing user information with username: {username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -247,16 +305,36 @@ async def updateUser(request: Request, username: str, user: User, auth: bool = D
 
 TAG_ORDERS = ["Orders"]
 
+@app.get("/getAllOrders", response_model=List[Order], status_code=200, tags=TAG_ADMIN,
+         summary="Get All Orders",
+         description="Retrieve all orders available in the database.")
+async def getAllUsers(request: Request,
+                      auth: bool = Depends(admin_access)):
+    try:
+        LOG_SYS.write(TAG, f"Getting all orders from Database.")
+        LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
+        LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
+        orders = await get_all_orders()
+        return orders
+    except HTTPException as http_err:
+        LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
+        raise http_err
+    except Exception as e:
+        LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/getUserOrders", status_code=200, response_model=List[Order], tags=TAG_ORDERS,
          summary="Get User Orders",
          description="Retrieve all orders associated with a user's account by username.")
-async def getUserOrders(request: Request, username: str = Query(..., description="The username of the user whose orders you want to retrieve.")):
+async def getUserOrders(request: Request,
+                        username: str = Query(..., description="The username of the user whose orders you want to retrieve."),
+                        auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Getting all orders information from user account with username: {username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
-        orders = await get_orders(username)
+        orders = await get_orders_by_username(username)
         return orders
     except HTTPException as http_err:
         LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
@@ -269,7 +347,9 @@ async def getUserOrders(request: Request, username: str = Query(..., description
 @app.get("/getOrderInfo", status_code=200, response_model=Order, tags=TAG_ORDERS,
          summary="Get Order Information",
          description="Retrieve the details of a specific order by order ID.")
-async def getOrderInfo(request: Request, order_id: str = Query(..., description="The ID of the order you want to retrieve.")):
+async def getOrderInfo(request: Request,
+                       order_id: Optional[Union[int, str]] = Query(..., description="The ID of the order you want to retrieve."),
+                       auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Getting all information of a specific order with id: {order_id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -287,13 +367,19 @@ async def getOrderInfo(request: Request, order_id: str = Query(..., description=
 @app.post("/insertOrder", status_code=201, tags=TAG_ORDERS,
           summary="Insert New Order",
           description="Insert a new order into the database with the provided details.")
-async def insertOrder(request: Request, order: Order):
+async def insertOrder(request: Request,
+                      order: Order,
+                      auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Insert new order information by user: {order.user.username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
-        result = await insert_order(order)
-        return {"message": result}
+        insertOrderResult = await insert_order(order)
+
+        LOG_SYS.write(TAG, f"Update stock quantity in the warehouse")
+        updateWarehouseResult = await update_product_warehouse(order.products)
+
+        return {"message": insertOrderResult}
     except HTTPException as http_err:
         LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
         raise http_err
@@ -305,7 +391,9 @@ async def insertOrder(request: Request, order: Order):
 @app.delete("/deleteOrder/{order_id}", status_code=200, tags=TAG_ORDERS,
             summary="Delete Order by id",
             description="Delete a specific order from the database by order ID.")
-async def deleteOrder(request: Request, order_id: str):
+async def deleteOrder(request: Request,
+                      order_id: Optional[Union[int, str]],
+                      auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Delete existing order information with id: {order_id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -323,7 +411,9 @@ async def deleteOrder(request: Request, order_id: str):
 @app.delete("/deleteOrder/{username}", status_code=200, tags=TAG_ORDERS,
             summary="Delete Order by username",
             description="Delete a one or more specific orders from the database by username.")
-async def deleteOrder(request: Request, username: str):
+async def deleteOrder(request: Request,
+                      username: str,
+                      auth: bool = Depends(user_access)):
     try:
         LOG_SYS.write(TAG, f"Delete existing orders information with username: {username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -338,10 +428,10 @@ async def deleteOrder(request: Request, username: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/clearOrders", status_code=200, tags=TAG_ORDERS,
+@app.delete("/clearOrders", status_code=200, tags=TAG_ADMIN,
             summary="Delete All Orders",
             description="Delete all orders from the database.")
-async def clearOrders(request: Request, auth: bool = Depends(authenticate)):
+async def clearOrders(request: Request, auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Clearing Orders collection.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -356,10 +446,13 @@ async def clearOrders(request: Request, auth: bool = Depends(authenticate)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/updateOrder", status_code=200, tags=TAG_ORDERS,
+@app.put("/updateOrder", status_code=200, tags=TAG_ADMIN,
          summary="Update Order Information",
          description="Update the information of a specific order by order ID.")
-async def updateOrder(request: Request, order_id: str, order: Order, auth: bool = Depends(authenticate)):
+async def updateOrder(request: Request,
+                      order_id: Optional[Union[int, str]],
+                      order: Optional[Union[Order, Dict[str, Any]]],
+                      auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Update existing order information with id: {order_id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -384,12 +477,9 @@ TAG_PRODUCTS = ["Products"]
          summary="Get Products",
          description="Retrieve products based on category, search term, sorting criteria, and page index.")
 async def getProducts(request: Request,
-                      category: str = Query(
-                          ..., description="The category of the products to retrieve."),
-                      searchTerm: str = Query(
-                          ..., description="The search term to filter the products."),
-                      sortingCriteria: Criteria = Query(
-                          ..., description="The criteria to sort the products."),
+                      category: str = Query(..., description="The category of the products to retrieve."),
+                      searchTerm: str = Query(..., description="The search term to filter the products."),
+                      sortingCriteria: Criteria = Query(..., description="The criteria to sort the products."),
                       pageIndex: int = Query(..., description="The page index to retrieve the products from.")):
     try:
         LOG_SYS.write(TAG, f"Getting products data with some filters at page index {pageIndex}.")
@@ -427,8 +517,7 @@ async def getAllProducts(request: Request):
          summary="Get Unique Products Count",
          description="Retrieve the count of unique products for a specific category and search term.")
 async def getUniqueProductsCount(request: Request,
-                                 category: str = Query(
-                                     ..., description="The category of the products to count."),
+                                 category: str = Query(..., description="The category of the products to count."),
                                  searchTerm: str = Query(..., description="The search term to filter the products.")):
     try:
         LOG_SYS.write(TAG, f"Getting products count with category: {category} and search string: {searchTerm}.")
@@ -447,7 +536,8 @@ async def getUniqueProductsCount(request: Request,
 @app.get("/getByID/{product_id}", response_model=Product, status_code=200, tags=TAG_PRODUCTS,
          summary="Get Product by ID",
          description="Retrieve a specific product by its unique identifier.")
-async def getByID(request: Request, product_id: int):
+async def getByID(request: Request,
+                  product_id: int):
     try:
         LOG_SYS.write(TAG, f"Getting specific product by id: {product_id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -465,7 +555,8 @@ async def getByID(request: Request, product_id: int):
 @app.get("/getByCategory/{category}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products by Category",
          description="Retrieve products based on a specific category.")
-async def getByCategory(request: Request, category: str):
+async def getByCategory(request: Request,
+                        category: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by search category: {category}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -483,7 +574,8 @@ async def getByCategory(request: Request, category: str):
 @app.get("/getByProductType/{product_type}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products by Product Type",
          description="Retrieve products based on a specific product type.")
-async def getBySearch(request: Request, product_type: str):
+async def getBySearch(request: Request,
+                      product_type: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by product type: {product_type}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -501,7 +593,8 @@ async def getBySearch(request: Request, product_type: str):
 @app.get("/getBySearch/{search_string}", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Get Products by Search String",
          description="Retrieve products based on a specific search string.")
-async def getBySearch(request: Request, search_string: str):
+async def getBySearch(request: Request,
+                      search_string: str):
     try:
         LOG_SYS.write(TAG, f"Getting products by search string: {search_string}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -519,7 +612,9 @@ async def getBySearch(request: Request, search_string: str):
 @app.get("/sortingByName", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Sort Products by Name",
          description="Sort products based on a specified price and order.")
-async def sortingByPrice(request: Request, price: float, asc: bool):
+async def sortingByPrice(request: Request,
+                         price: float,
+                         asc: bool):
     try:
         LOG_SYS.write(TAG, f"Sort products by price {price} and by asc: {asc}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -537,7 +632,8 @@ async def sortingByPrice(request: Request, price: float, asc: bool):
 @app.get("/sortingByPrice", response_model=List[Product], status_code=200, tags=TAG_PRODUCTS,
          summary="Sort Products by Price",
          description="Sort products based on a specified name order.")
-async def sortingByPrice(request: Request, asc: bool):
+async def sortingByPrice(request: Request,
+                         asc: bool):
     try:
         LOG_SYS.write(TAG, f"Sort products by name in asc order: {asc}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -552,10 +648,12 @@ async def sortingByPrice(request: Request, asc: bool):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/insertProduct", status_code=201, tags=TAG_PRODUCTS,
+@app.post("/insertProduct", status_code=201, tags=TAG_ADMIN,
           summary="Insert Product",
           description="Insert a new product into the database.")
-async def insertProduct(request: Request, product: Product):
+async def insertProduct(request: Request,
+                        product: Product,
+                        auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Insert new product information with id: {product._id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -570,10 +668,12 @@ async def insertProduct(request: Request, product: Product):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/deleteProduct/{product_id}", status_code=200, tags=TAG_PRODUCTS,
+@app.delete("/deleteProduct/{product_id}", status_code=200, tags=TAG_ADMIN,
             summary="Delete Product",
             description="Delete a specific product from the database by its identifier.")
-async def deleteProduct(request: Request, product_id: str):
+async def deleteProduct(request: Request,
+                        product_id: int,
+                        auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Delete existing product information with id: {product_id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -588,10 +688,11 @@ async def deleteProduct(request: Request, product_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/clearProducts", status_code=200, tags=TAG_PRODUCTS,
+@app.delete("/clearProducts", status_code=200, tags=TAG_ADMIN,
             summary="Delete All Products",
             description="Delete all products from the database.")
-async def clearProducts(request: Request, auth: bool = Depends(authenticate)):
+async def clearProducts(request: Request,
+                        auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Clearing Products collection.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -606,10 +707,13 @@ async def clearProducts(request: Request, auth: bool = Depends(authenticate)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/updateProduct/{product_id}", status_code=200, tags=TAG_PRODUCTS,
+@app.put("/updateProduct/{product_id}", status_code=200, tags=TAG_ADMIN,
          summary="Update Product",
          description="Update information of a specific product in the database by its identifier.")
-async def updateProduct(request: Request, product_id: str, product: Product, auth: bool = Depends(authenticate)):
+async def updateProduct(request: Request,
+                        product_id: int,
+                        product: Optional[Union[Product, Dict[str, Any]]],
+                        auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Update existing product information with id: {product_id}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -644,12 +748,11 @@ def welcome_message():
     LOG_SYS.write(STARTUP_TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
     LOG_SYS.write(STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
     LOG_SYS.write(STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
-    LOG_SYS.write(
-        STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
+    LOG_SYS.write(STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
 
     LOG_SYS.write(STARTUP_TAG, "**************************************************")
-    LOG_SYS.write(STARTUP_TAG, f"ADMIN_ACCESS: {ADMIN_ACCESS}")
-    LOG_SYS.write(STARTUP_TAG, f"ADMIN_TOKEN: {ADMIN_TOKEN}")
+    LOG_SYS.write(STARTUP_TAG, f"USER TOKEN: {USER_TOKEN}")
+    LOG_SYS.write(STARTUP_TAG, f"USER TOKEN: {ADMIN_TOKEN}")
     LOG_SYS.write(STARTUP_TAG, "**************************************************")
 
 

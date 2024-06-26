@@ -1,21 +1,23 @@
 # Models
-from typing import List, Tuple, Optional
+from typing import List, Dict, Any, Optional, Union
 from pydantic import BaseModel, Field
 
 class User(BaseModel):
-    id: Optional[int] | Optional[str] = Field(-1, alias='_id', description="Unique identifier for the user")
+    id: Optional[Union[int, str]] = Field(-1, alias='_id', description="Unique identifier for the user")
     username: str = Field(..., description="Username of the user")
     email: str = Field(..., description="Email address of the user")
     password: str = Field(..., description="Password of the user")
+    token: Optional[str] = Field("unauthorized", description="Access Token for the user.")
 
 
 class UserInfo(BaseModel):
     username: str = Field(..., description="Username of the user in an order")
     email: str = Field(..., description="Email address of the user in an order")
+    token: Optional[str] = Field("default_token", description="Access Token for the user.")
 
  
 class Product(BaseModel):
-    id: Optional[int] | Optional[str] = Field(-1, alias='_id', description="Unique identifier for the product")
+    id: Optional[Optional[Union[int, str]]] = Field(-1, alias='_id', description="Unique identifier for the product")
     title: str = Field(..., description="Title of the product")
     product_type: str = Field(..., description="Type of the product")
     price: float = Field(..., description="Price of the product")
@@ -32,7 +34,7 @@ class Product(BaseModel):
 
 
 class OrderPorduct(BaseModel):
-    id: Optional[int] | Optional[str] = Field(-1, alias='_id', description="Unique identifier for the product")
+    id: Optional[Optional[Union[int, str]]] = Field(-1, alias='_id', description="Unique identifier for the product")
     title: str = Field(..., description="Title of the product")
     product_type: str = Field(..., description="Type of the product")
     price: float = Field(..., description="Price of the product")
@@ -42,7 +44,7 @@ class OrderPorduct(BaseModel):
 
 
 class Order(BaseModel):
-    id: Optional[int] | Optional[str] = Field(-1, alias='_id', description="Unique identifier for the order")
+    id: Optional[Optional[Union[int, str]]] = Field(-1, alias='_id', description="Unique identifier for the order")
     user: UserInfo = Field(..., description="User associated with the order")
     products: List[OrderPorduct] = Field(..., description="List of products and their quantities in the order")
     total: float = Field(..., description="Total price of the order")

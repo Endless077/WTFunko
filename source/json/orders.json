@@ -1,35 +1,41 @@
 {
-  "#ID1": {
-    "_id": "ID1",
+  "admin_order": {
+    "_id": "funko_order",
     "user": {
-      "_id": 1,
       "username": "admin",
       "email": "funko@unisa.it"
     },
     "products": [
-      [
-        {
-          "_id": 7051374362813,
-          "title": "\"It's Crunch Time \" Kids Tee - General Mills",
-          "price": 7.0,
-          "description": "\"It's Crunch Time\" with the Count Chocula Pop! Tee! Count Chocula dashes under the light of the full moon; perhaps to get some delicious spooky cereal? This black crewneck tee will become a go-to tee in no time and you'll love pairing it with a variety of bottoms for versatile casualwear options. Tee shirt is in youth unisex sizes: XS, SM, MD, LG and XL. 100% Cotton.\nPlease note: We are not able to exchange sizes or offer replacements for apparel that was sent in the size ordered.\nApparel Size Chart",
-          "img": "https://cdn.shopify.com/s/files/1/1052/2158/products/61095_BITE_NITE_CHOCULA_BLACK__FH14324_KIDS_WEB_96edae2f-c780-4f4e-bd6e-710a2ed1b4d3.png?v=1635465775"
-        },
-        2
-      ],
-      [
-        {
-          "_id": 7231381405885,
-          "title": "\"This is the Way\" Kids Tee - The Mandalorian",
-          "price": 10.0,
-          "description": "Celebrate May the Fourth in stellar style with the \"This is the Way\" STAR WARS The Mandalorian kids tee-shirt. On the front of this short-sleeved purple tee, The Mandalorian appears, carrying The Child. Behind him, the words Star Wars appear, with the sun setting in the desert and filling in the lettering with this scene. Its the perfect tee for celebrating your STAR WARS fandom or for turning everyday activities into an adventure in a galaxy far, far away.\n\nYouth unisex sizes XS-XL\n100% cotton\nApparel Size Chart\n\nPlease note: We are not able to exchange sizes or offer replacements for apparel that was sent in the size ordered.",
-          "img": "https://cdn.shopify.com/s/files/1/1052/2158/products/57217_THIS_IS_THE_WAY_FH13992_WEB_1.png?v=1651611458"
-        },
-        1
-      ]
+      {
+        "_id": 7078124683453,
+        "title": "Zombie Captain America - What If…?",
+        "product_type": "Pop!",
+        "price": 15,
+        "amount": 3,
+        "interest": ["Marvel"],
+        "img": "https://cdn.shopify.com/s/files/1/1052/2158/products/58254_Marvel_POP_GLAM-1-WEB.png?v=1637783425"
+      },
+      {
+        "_id": 6958001062077,
+        "title": "Zombie Captain America with Shield - What If…?",
+        "product_type": "Pop!",
+        "price": 12,
+        "amount": 2,
+        "interest": ["Marvel"],
+        "img": "https://cdn.shopify.com/s/files/1/1052/2158/products/57375_Marvel_POP_GLAM-1-WEB.png?v=1631231036"
+      },
+      {
+        "_id": 6958000963773,
+        "title": "Zombie Iron Man - What If\u2026?",
+        "product_type": "Pop!",
+        "price": 12,
+        "amount": 3,
+        "interest": ["Marvel"],
+        "img": "https://cdn.shopify.com/s/files/1/1052/2158/products/57379_Marvel_Pop_GLAM-1-WEB.png?v=1631231022"
+      }
     ],
-    "total": 24.0,
-    "date": "2024-05-09 11:53:33",
-    "status": "Evaso"
+    "total": 50.91,
+    "date": "2024-06-26T16:09:18.362Z",
+    "status": "Fullfilled"
   }
 }

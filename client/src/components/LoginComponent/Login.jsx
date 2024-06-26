@@ -28,6 +28,7 @@ const Login = () => {
 
         const loginResponse = await fetchData(
           endpointUrl,
+          undefined,
           method,
           undefined,
           undefined,
@@ -35,7 +36,6 @@ const Login = () => {
         );
 
         const loginResponseData = await loginResponse.json();
-
         if (!loginResponse.ok) {
           throw new Error(
             loginResponseData.detail || "Login failed. Please try again later."
@@ -51,6 +51,11 @@ const Login = () => {
           showConfirmButton: false,
           allowOutsideClick: false,
           willClose: () => {
+            localStorage.setItem("user", JSON.stringify(loginResponseData));
+            localStorage.setItem(
+              "token",
+              JSON.stringify(loginResponseData.token)
+            );
             navigate("/");
           },
         });
@@ -79,8 +84,7 @@ const Login = () => {
         );
       }
 
-      const user = await loginRequest();
-      localStorage.setItem("user", JSON.stringify(user));
+      await loginRequest();
     } catch (error) {
       console.error("Error during registration:", error);
       setError(error.message);

@@ -30,7 +30,6 @@ const CartPage = () => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(storedCart);
   }, []);
-  
 
   const updateQuantity = (productId, newQuantity) => {
     const updatedCart = cart.map((item) => {
@@ -113,7 +112,7 @@ const CartPage = () => {
 
   const makeOrder = (currentUser, products) => {
     const currentDate = new Date().toISOString();
-  
+
     const orderProducts = products.map((product) => ({
       _id: product._id,
       title: product.title,
@@ -124,15 +123,15 @@ const CartPage = () => {
       description: product.description,
       img: product.img,
     }));
-  
+
     const total = calculateTotal();
-    
+
     const statusKeys = Object.keys(Status);
     const randomKey = statusKeys[Math.floor(Math.random() * statusKeys.length)];
     const randomStatus = Status[randomKey];
 
-    console.log(randomKey)
-    console.log(randomStatus)
+    console.log(randomKey);
+    console.log(randomStatus);
     const newOrder = {
       user: {
         username: currentUser.username,
@@ -145,24 +144,29 @@ const CartPage = () => {
     };
 
     return newOrder;
-  };  
+  };
 
   const handlePayment = async () => {
     const sendOrder = async (newOrder) => {
       try {
         const endpointUrl = config.endpoints.insertOrder.url;
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        };
         const method = config.endpoints.insertOrder.method;
         const payload = newOrder;
 
         const insertOrderResponse = await fetchData(
           endpointUrl,
+          headers,
           method,
           undefined,
           undefined,
           payload
         );
 
-        const insertOrderResponseData = await insertOrderResponse.json()
+        const insertOrderResponseData = await insertOrderResponse.json();
 
         if (!insertOrderResponse.ok) {
           throw new Error(
@@ -174,7 +178,7 @@ const CartPage = () => {
         Swal.fire({
           icon: "success",
           title: "Payment Done",
-          text: `Thank you for your order!`,
+          text: `Thank you for your order\uD83D\uDCB2!`,
           timer: 3000,
           timerProgressBar: true,
           showConfirmButton: false,
@@ -182,7 +186,7 @@ const CartPage = () => {
           willClose: () => {
             setCart([]);
             localStorage.removeItem("cart");
-            localStorage.removeItem(`${username}Orders`)
+            localStorage.removeItem(`${username}Orders`);
             navigate("/");
           },
         });
@@ -197,7 +201,7 @@ const CartPage = () => {
     };
 
     try {
-      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const currentUser = JSON.parse(localStorage.getItem("user"));
       if (currentUser == null) {
         Swal.fire({
           icon: "error",

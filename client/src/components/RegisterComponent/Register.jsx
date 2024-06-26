@@ -29,14 +29,15 @@ const Register = () => {
 
         const signupResponse = await fetchData(
           endpointUrl,
+          undefined,
           method,
           undefined,
           undefined,
           payload
         );
-        
-        const signupResponseData = await signupResponse.json()
-        
+
+        const signupResponseData = await signupResponse.json();
+
         if (!signupResponse.ok) {
           throw new Error(
             signupResponseData.detail ||
@@ -53,11 +54,16 @@ const Register = () => {
           showConfirmButton: false,
           allowOutsideClick: false,
           willClose: () => {
+            localStorage.setItem("user", JSON.stringify(signupResponseData));
+            localStorage.setItem(
+              "token",
+              JSON.stringify(signupResponseData.token)
+            );
             navigate("/");
           },
         });
 
-        return payload;
+        return signupResponseData;
       } catch (error) {
         console.error("Error signup attempt:", error);
         Swal.fire({
@@ -73,10 +79,9 @@ const Register = () => {
       setLoading(true);
       setError("");
 
-      validate(username, email, password)
+      validate(username, email, password);
 
-      const newUser = await signupRequest();
-      localStorage.setItem("user", JSON.stringify(newUser));
+      await signupRequest();
     } catch (error) {
       console.error("Error during registration:", error);
       setError(error.message);
@@ -98,26 +103,30 @@ const Register = () => {
     if (username.length < 4 || username.length > 20) {
       throw new Error("Username must be between 4 and 20 characters.");
     }
-  
+
     const usernameRegex = /^[a-zA-Z0-9]+$/;
     if (!usernameRegex.test(username)) {
-      throw new Error("Username must not contain special characters or spaces.");
+      throw new Error(
+        "Username must not contain special characters or spaces."
+      );
     }
-    
-    setUsername(username.toLowerCase())
 
-    const emailRegex = /\S+@\S+\.\S+/
+    setUsername(username.toLowerCase());
+
+    const emailRegex = /\S+@\S+\.\S+/;
     if (!emailRegex.test(email)) {
       throw new Error("Invalid email format.");
     }
-    
-    setEmail(email.toLowerCase())
+
+    setEmail(email.toLowerCase());
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{6,}$/;
     if (!passwordRegex.test(password)) {
-      throw new Error("Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long.");
+      throw new Error(
+        "Password must contain at least one uppercase letter, one special character, one number, and be at least 6 characters long."
+      );
     }
-    
+
     return true;
   }
 

@@ -45,6 +45,7 @@ export const Products = () => {
 
         const uniqueProductsCountResponse = await fetchData(
           endpointUrl,
+          undefined,
           method,
           queryParams
         );
@@ -78,6 +79,7 @@ export const Products = () => {
         };
         const productsResponse = await fetchData(
           endpointUrl,
+          undefined,
           method,
           queryParams
         );
