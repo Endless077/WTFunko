@@ -269,6 +269,7 @@ export const Products = () => {
                 handlePageChange(
                   currentCategory,
                   currentSearchTerm,
+                  currentSortingCriteria,
                   startPage - 1
                 )
               }
