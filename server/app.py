@@ -240,12 +240,12 @@ async def insertUser(request: Request,
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/deleteUser/{username}", status_code=200, tags=TAG_USERS,
+@app.delete("/deleteUser/{username}", status_code=200, tags=TAG_ADMIN,
             summary="Delete User",
             description="Delete a user from the database by username.")
 async def delete_existing_user(request: Request,
                                username: str,
-                               auth: bool = Depends(user_access)):
+                               auth: bool = Depends(admin_access)):
     try:
         LOG_SYS.write(TAG, f"Delete existing user information with username: {username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -752,7 +752,7 @@ def welcome_message():
 
     LOG_SYS.write(STARTUP_TAG, "**************************************************")
     LOG_SYS.write(STARTUP_TAG, f"USER TOKEN: {USER_TOKEN}")
-    LOG_SYS.write(STARTUP_TAG, f"USER TOKEN: {ADMIN_TOKEN}")
+    LOG_SYS.write(STARTUP_TAG, f"ADMIN TOKEN: {ADMIN_TOKEN}")
     LOG_SYS.write(STARTUP_TAG, "**************************************************")
 
 
