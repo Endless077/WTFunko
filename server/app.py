@@ -739,22 +739,6 @@ async def about():
 
 ###################################################################################################
 
-STARTUP_TAG = "STARTUP"
-
-
-def welcome_message():
-    LOG_SYS.write(STARTUP_TAG, "__          _________ ______           _          ")
-    LOG_SYS.write(STARTUP_TAG, "\ \        / /__   __|  ____|         | |         ")
-    LOG_SYS.write(STARTUP_TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
-    LOG_SYS.write(STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
-    LOG_SYS.write(STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
-    LOG_SYS.write(STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
-
-    LOG_SYS.write(STARTUP_TAG, "**************************************************")
-    LOG_SYS.write(STARTUP_TAG, f"USER TOKEN: {USER_TOKEN}")
-    LOG_SYS.write(STARTUP_TAG, f"ADMIN TOKEN: {ADMIN_TOKEN}")
-    LOG_SYS.write(STARTUP_TAG, "**************************************************")
-
 
 SHUTDOWN_TAG = "SHUTDOWN"
 
@@ -770,6 +754,23 @@ def shutdown(signum, frame):
         sys.exit(1)
 
 
+STARTUP_TAG = "STARTUP"
+
+
+def startup():
+    LOG_SYS.write(STARTUP_TAG, "__          _________ ______           _          ")
+    LOG_SYS.write(STARTUP_TAG, "\ \        / /__   __|  ____|         | |         ")
+    LOG_SYS.write(STARTUP_TAG, " \ \  /\  / /   | |  | |__ _   _ _ __ | | _____   ")
+    LOG_SYS.write(STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
+    LOG_SYS.write(STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
+    LOG_SYS.write(STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
+
+    LOG_SYS.write(STARTUP_TAG, "**************************************************")
+    LOG_SYS.write(STARTUP_TAG, f"USER TOKEN: {USER_TOKEN}")
+    LOG_SYS.write(STARTUP_TAG, f"ADMIN TOKEN: {ADMIN_TOKEN}")
+    LOG_SYS.write(STARTUP_TAG, "**************************************************")
+
+
 if __name__ == '__main__':
     # Call Signal Registration
     signal.signal(signal.SIGINT, shutdown)   # Ctrl+C
@@ -780,11 +781,14 @@ if __name__ == '__main__':
     signal.signal(signal.SIGUSR1, shutdown)  # User-defined signal 1
     signal.signal(signal.SIGUSR2, shutdown)  # User-defined signal 2
 
-    # Welcome Message
-    welcome_message()
+    # Startup Message
+    startup()
 
     # Connect to MongoDB
     connect(host="localhost", port=27017, db_name="WTFunko")
 
     # Start Uvicorn App
     uvicorn.run(app, host="localhost", port=8000)
+
+
+###################################################################################################
