@@ -151,8 +151,7 @@ const CartPage = () => {
       try {
         const endpointUrl = config.endpoints.insertOrder.url;
         const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
         };
         const method = config.endpoints.insertOrder.method;
         const payload = newOrder;

@@ -7,13 +7,11 @@ class User(BaseModel):
     username: str = Field(..., description="Username of the user")
     email: str = Field(..., description="Email address of the user")
     password: str = Field(..., description="Password of the user")
-    token: Optional[str] = Field("unauthorized", description="Access Token for the user.")
 
 
 class UserInfo(BaseModel):
     username: str = Field(..., description="Username of the user in an order")
     email: str = Field(..., description="Email address of the user in an order")
-    token: Optional[str] = Field("default_token", description="Access Token for the user.")
 
  
 class Product(BaseModel):

@@ -55,10 +55,6 @@ const Register = () => {
           allowOutsideClick: false,
           willClose: () => {
             localStorage.setItem("user", JSON.stringify(signupResponseData));
-            localStorage.setItem(
-              "token",
-              JSON.stringify(signupResponseData.token)
-            );
             navigate("/");
           },
         });

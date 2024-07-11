@@ -52,10 +52,6 @@ const Login = () => {
           allowOutsideClick: false,
           willClose: () => {
             localStorage.setItem("user", JSON.stringify(loginResponseData));
-            localStorage.setItem(
-              "token",
-              JSON.stringify(loginResponseData.token)
-            );
             navigate("/");
           },
         });

@@ -60,29 +60,6 @@ export async function fetchData(
 }
 
 
-// Retrive Token Function
-export async function retrieveToken() {
-  try {
-    // Create the baseUrl of the /retriveToken endpoint
-    const baseUrl = new URL(getApiUrl("/retriveTorken"));
-
-    // Create fetchOptions of the /retriveToken endpoint
-    const fetchOptions = {
-      headers: { "Content-Type": "application/json" },
-      method: "GET",
-    };
-
-    // Fetch token using the constructed URL and fetch options
-    const response = await fetch(baseUrl.toString(), fetchOptions);
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    // Rethrow the error to be handled by the calling function
-    throw error;
-  }
-}
-
-
 // API Dictionary (not all entries)
 export const config = {
   api_url: "localhost",

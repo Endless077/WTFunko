@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 import { format } from "date-fns";
 import { Status } from "../enumerations";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import { config, fetchData, retrieveToken } from "../../utils";
+import { config, fetchData } from "../../utils";
 
 const UserInfo = () => {
   const [user, setUser] = useState(null);
@@ -27,8 +27,7 @@ const UserInfo = () => {
       try {
         const endpointUrl = config.endpoints.getUser.url;
         const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
         };
         const method = config.endpoints.getUser.method;
         const queryParams = {
@@ -47,19 +46,6 @@ const UserInfo = () => {
         const getUserResponseData = await getUserResponse.json();
 
         if (!getUserResponse.ok) {
-          if (getUserResponse.status == 401) {
-            console.error(
-              "Error fetching user data:",
-              getUserResponseData.detail
-            );
-            Swal.fire({
-              icon: "error",
-              title: "Unauthorized User",
-              text: "If you think it is an error, please try again.",
-            });
-            newToken = await retrieveToken();
-            localStorage.setItem("token", newToken);
-          }
           throw new Error(
             getUserResponseData.detail ||
               "User information fetch failed. Please try again later."
@@ -96,8 +82,7 @@ const UserInfo = () => {
       try {
         const endpointUrl = config.endpoints.getUserOrders.url;
         const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
         };
         const method = config.endpoints.getUserOrders.method;
         const queryParams = {
@@ -116,14 +101,6 @@ const UserInfo = () => {
         const getOrdersResponseData = await getUserOrdersResponse.json();
 
         if (!getUserOrdersResponse.ok) {
-          if (getUserOrdersResponse.status == 401) {
-            console.error(
-              "Error fetching user data:",
-              getOrdersResponseData.detail
-            );
-            const newToken = await retrieveToken();
-            localStorage.setItem("token", newToken);
-          }
           throw new Error(
             getOrdersResponseData.detail ||
               "User orders fetch failed. Please try again later."
@@ -190,8 +167,7 @@ const UserInfo = () => {
       try {
         const endpointUrl = config.endpoints.deleteAccount.url;
         const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
         };
         const method = config.endpoints.deleteAccount.method;
         const pathParams = {
