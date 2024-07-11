@@ -89,7 +89,6 @@ async def login(request: Request,
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
         user_data = await get_user(user.username)
-
         if hash_string_match(user.password, user_data.password):
             return user_data
         else:
@@ -133,10 +132,8 @@ async def deleteAccount(request: Request,
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
         LOG_SYS.write(TAG, f"-- Connected with client (ip): {request.client.host}.")
         resultOrders = await delete_orders_by_username(username)
-
         LOG_SYS.write(TAG, f"Delete all user data with username: {username}")
         resultUser = await delete_user(username)
-
         result = f"{resultUser} & {resultOrders}"
         return {"message": result}
 
@@ -189,8 +186,7 @@ async def getUser(request: Request,
 @app.post("/insertUser", status_code=201, tags=TAG_ADMIN,
           summary="Insert New User",
           description="Insert a new user into the database with the provided information.")
-async def insertUser(request: Request,
-                     user: User):
+async def insertUser(request: Request, user: User):
     try:
         LOG_SYS.write(TAG, f"Insert new user information with username: {user.username}.")
         LOG_SYS.write(TAG, f"-- User Agent: {request.headers.get('user-agent')}.")
@@ -260,7 +256,6 @@ async def updateUser(request: Request,
     except Exception as e:
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 ###################################################################################################
 
@@ -334,8 +329,7 @@ async def insertOrder(request: Request,
         insertOrderResult = await insert_order(order)
 
         LOG_SYS.write(TAG, f"Update stock quantity in the warehouse")
-        updateWarehouseResult = await update_product_warehouse(order.products)
-
+        await update_product_warehouse(order.products)
         return {"message": insertOrderResult}
     except HTTPException as http_err:
         LOG_SYS.write(TAG, f"An HTTP error occurred with Exception: {http_err.detail}")
@@ -723,7 +717,7 @@ def startup():
 if __name__ == '__main__':
     # Call Signal Registration
     signal.signal(signal.SIGINT, shutdown)   # Ctrl+C
-    signal.signal(signal.SIGTERM, shutdown)  # kill
+    signal.signal(signal.SIGTERM, shutdown)  # Kill
     signal.signal(signal.SIGHUP, shutdown)   # Terminal closed
     signal.signal(signal.SIGQUIT, shutdown)  # Quit signal
     signal.signal(signal.SIGABRT, shutdown)  # Abort signal
@@ -732,12 +726,7 @@ if __name__ == '__main__':
 
     # Startup Message
     startup()
-
     # Connect to MongoDB
     connect(host="localhost", port=27017, db_name="WTFunko")
-
     # Start Uvicorn App
     uvicorn.run(app, host="localhost", port=8000)
-
-
-###################################################################################################

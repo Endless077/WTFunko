@@ -31,7 +31,7 @@ class Product(BaseModel):
     img: str = Field(..., description="Image URL of the product")
 
 
-class OrderPorduct(BaseModel):
+class OrderProduct(BaseModel):
     id: Optional[Optional[Union[int, str]]] = Field(-1, alias='_id', description="Unique identifier for the product")
     title: str = Field(..., description="Title of the product")
     product_type: str = Field(..., description="Type of the product")
@@ -44,7 +44,7 @@ class OrderPorduct(BaseModel):
 class Order(BaseModel):
     id: Optional[Optional[Union[int, str]]] = Field(-1, alias='_id', description="Unique identifier for the order")
     user: UserInfo = Field(..., description="User associated with the order")
-    products: List[OrderPorduct] = Field(..., description="List of products and their quantities in the order")
+    products: List[OrderProduct] = Field(..., description="List of products and their quantities in the order")
     total: float = Field(..., description="Total price of the order")
     date: str = Field(..., description="Date of the order")
     status: str = Field(..., description="Status of the order")

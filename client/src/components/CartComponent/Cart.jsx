@@ -151,7 +151,7 @@ const CartPage = () => {
       try {
         const endpointUrl = config.endpoints.insertOrder.url;
         const headers = {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         };
         const method = config.endpoints.insertOrder.method;
         const payload = newOrder;
@@ -230,7 +230,7 @@ const CartPage = () => {
       <Navbar />
       <div className="container mt-5">
         <h2>Shopping Cart</h2>
-        <h6>(for orders over $100 free shipping)</h6>
+        <h6>(Free shipping for orders over $100)</h6>
         {cart.length === 0 ? (
           <p>Your cart is empty.</p>
         ) : (
