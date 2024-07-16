@@ -154,4 +154,4 @@ For support, email [antonio.garofalo125@gmail.com](mailto:antonio.garofalo125@gm
 
 ### Documentation
 
-See the documentation project docs **[here](https://github.com/Endless077/WTFunko)**.
+See the documentation project docs **[here](https://github.com/Endless077/WTFunko/docs)**.

@@ -130,8 +130,6 @@ const CartPage = () => {
     const randomKey = statusKeys[Math.floor(Math.random() * statusKeys.length)];
     const randomStatus = Status[randomKey];
 
-    console.log(randomKey);
-    console.log(randomStatus);
     const newOrder = {
       user: {
         username: currentUser.username,
@@ -150,15 +148,12 @@ const CartPage = () => {
     const sendOrder = async (newOrder) => {
       try {
         const endpointUrl = config.endpoints.insertOrder.url;
-        const headers = {
-          "Content-Type": "application/json",
-        };
         const method = config.endpoints.insertOrder.method;
         const payload = newOrder;
 
         const insertOrderResponse = await fetchData(
           endpointUrl,
-          headers,
+          undefined,
           method,
           undefined,
           undefined,

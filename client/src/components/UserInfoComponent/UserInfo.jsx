@@ -26,9 +26,6 @@ const UserInfo = () => {
     const fetchUserData = async () => {
       try {
         const endpointUrl = config.endpoints.getUser.url;
-        const headers = {
-          "Content-Type": "application/json"
-        };
         const method = config.endpoints.getUser.method;
         const queryParams = {
           username: username,
@@ -36,7 +33,7 @@ const UserInfo = () => {
 
         const getUserResponse = await fetchData(
           endpointUrl,
-          headers,
+          undefined,
           method,
           queryParams,
           undefined,
@@ -81,9 +78,6 @@ const UserInfo = () => {
     const fetchUserOrders = async () => {
       try {
         const endpointUrl = config.endpoints.getUserOrders.url;
-        const headers = {
-          "Content-Type": "application/json"
-        };
         const method = config.endpoints.getUserOrders.method;
         const queryParams = {
           username: username,
@@ -91,7 +85,7 @@ const UserInfo = () => {
 
         const getUserOrdersResponse = await fetchData(
           endpointUrl,
-          headers,
+          undefined,
           method,
           queryParams,
           undefined,
@@ -166,16 +160,13 @@ const UserInfo = () => {
     const fetchDeleteUser = async () => {
       try {
         const endpointUrl = config.endpoints.deleteAccount.url;
-        const headers = {
-          "Content-Type": "application/json"
-        };
         const method = config.endpoints.deleteAccount.method;
         const pathParams = {
           username: username,
         };
         const deleteUserResponse = await fetchData(
           endpointUrl,
-          headers,
+          undefined,
           method,
           undefined,
           pathParams,

@@ -22,8 +22,7 @@ export const Products = () => {
   const currentPage = parseInt(queryParams.get("page")) || 0;
   const currentCategory = queryParams.get("category") || "All";
   const currentSearchTerm = queryParams.get("searchTerm") || "";
-  const currentSortingCriteria =
-    queryParams.get("sortingCriteria") || Criteria.DEFAULT;
+  const currentSortingCriteria = queryParams.get("sortingCriteria") || Criteria.DEFAULT;
 
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);

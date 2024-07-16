@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 import uvicorn
 
 # Security & Middleware
-from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 import secrets
 
@@ -26,12 +26,12 @@ from mongo import *
 LOG_SYS = get_logger()
 TAG = "FastAPI"
 
-ACCESS_TOKEN = secrets.token_hex(16)
 TAG_ADMIN = ["Admin"]
+ACCESS_TOKEN = secrets.token_hex(16)
 
 app = FastAPI(title="FastAPI - WTFunko",
-              description="A simple and fast api suite for WTFunko e-commerce.",
               summary="Some easy API for WTFunko Store.",
+              description="A simple and fast api suite for WTFunko e-commerce.",
               contact={
                   "email": "antonio.garofalo125@gmail.com",
                   "name": "Antonio Garofalo",
@@ -45,8 +45,6 @@ app = FastAPI(title="FastAPI - WTFunko",
               },
               version="1.0"
               )
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 origins = [
     "http://127.0.0.1",
@@ -64,15 +62,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-def access_control(token: str = Depends(oauth2_scheme)):
-    if token != ACCESS_TOKEN:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Uauthorized Admin Access",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return True
 
 ###################################################################################################
 
@@ -414,9 +403,7 @@ async def updateOrder(request: Request,
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 ###################################################################################################
-
 
 TAG_PRODUCTS = ["Products"]
 
@@ -671,18 +658,14 @@ async def updateProduct(request: Request,
         LOG_SYS.write(TAG, f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 ###################################################################################################
-
 
 @app.get('/', status_code=200, tags=["root"], include_in_schema=False)
 @app.get('/about', status_code=200, tags=["root"], include_in_schema=False)
 async def about():
     return RedirectResponse(url="/docs")
 
-
 ###################################################################################################
-
 
 SHUTDOWN_TAG = "SHUTDOWN"
 
@@ -708,11 +691,10 @@ def startup():
     LOG_SYS.write(STARTUP_TAG, "  \ \/  \/ /    | |  |  __| | | | '_ \| |/ / _ \  ")
     LOG_SYS.write(STARTUP_TAG, "   \  /\  /     | |  | |  | |_| | | | |   < (_) | ")
     LOG_SYS.write(STARTUP_TAG, "    \/  \/      |_|  |_|   \__,_|_| |_|_|\_\___/  ")
-
+    
     LOG_SYS.write(STARTUP_TAG, "**************************************************")
     LOG_SYS.write(STARTUP_TAG, f"ACCESS TOKEN: {ACCESS_TOKEN}")
     LOG_SYS.write(STARTUP_TAG, "**************************************************")
-
 
 if __name__ == '__main__':
     # Call Signal Registration
@@ -730,3 +712,5 @@ if __name__ == '__main__':
     connect(host="localhost", port=27017, db_name="WTFunko")
     # Start Uvicorn App
     uvicorn.run(app, host="localhost", port=8000)
+
+###################################################################################################
