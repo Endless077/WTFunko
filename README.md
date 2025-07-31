@@ -1,37 +1,36 @@
-![Logo](https://github.com/Endless077/WTFunko/blob/main/client/public/assets/WTF.png)
+![Wallpaper](https://github.com/Endless077/WTFunko/blob/main/client/public/assets/WTF.png)
+
+# WTFunko 🎉
+
+Welcome to **WTFunko** – your go-to e-commerce platform for Funko Pop! figures! Developed as a university project, WTFunko showcases the power and versatility of NoSQL databases in managing an online store.
 
 
-# WTFunko
+## ❓ Why Choose a NoSQL Database?
 
-An e-commerce selling Funko Pop! via the WTFunko platform, was developed as a university project to implement a NoSQL database.
+Explore the benefits of using NoSQL databases like MongoDB for e-commerce:
 
+### ⚙️ Flexibility and Scalability
 
-## More Details
+NoSQL databases handle both unstructured and semi-structured data seamlessly. This means you can store diverse information such as product details and user reviews without complex schema modifications. Ideal for adapting to evolving business needs!
 
-Why develop e-commerce with NoSql database? Here some advantages:
+### 🚀 High Performance and Availability
 
-#### *Flexibility and Scalability*
+Experience high performance and reliability under heavy loads. NoSQL databases distribute data across multiple servers and offer horizontal scalability, ensuring your e-commerce site remains responsive even during traffic spikes.
 
-NoSQL databases, like MongoDB, handle unstructured and semi-structured data, making it easy to store diverse information such as product details and user reviews. This flexibility allows quick adaptation to changing business needs without extensive schema modifications.
+### 📊 Efficient Handling of Big Data
 
-#### *High Performance and Availability*
+Optimized for big data, NoSQL databases support distributed storage and parallel processing. This efficiency is crucial for personalized marketing, customer segmentation, and inventory management, ensuring smooth operations even with large datasets.
 
-NoSQL databases deliver high performance and ensure availability under heavy loads. They distribute data across multiple servers and provide horizontal scalability, keeping e-commerce sites responsive even during traffic spikes.
+### 🌟 Improved User Experience
 
-#### *Efficient Handling of Big Data*
+Enhance user satisfaction with real-time recommendations, dynamic pricing, and personalized product suggestions. NoSQL databases manage user data effectively, leading to tailored content and offers that boost sales and engagement.
 
-Optimized for big data, NoSQL databases support distributed storage and parallel processing. This enables efficient handling of large datasets, essential for personalized marketing, customer segmentation, and inventory optimization.
+### 🔧 Simplified Development and Maintenance
 
-#### *Improved User Experience*
-
-NoSQL databases enable real-time recommendations, dynamic pricing, and personalized product suggestions by efficiently managing user data. This leads to tailored content and offers, boosting customer satisfaction and sales.
-
-#### *Simplified Development and Maintenance*
-
-The schema-less nature of NoSQL databases simplifies development and maintenance. Developers can add new fields without breaking existing functionality, accelerating feature deployment and reducing the risk of single points of failure.
+NoSQL databases’ schema-less nature simplifies development and maintenance. Developers can add new fields and features without disrupting existing functionality, speeding up deployment and minimizing risks.
 
 
-## Installation
+## 🛠️ Installation
 
 First, install a local or host a NoSQL MongoDB database. If hosting, update the URI, Database Name, and, if needed, user and password in the database.py file.
 
@@ -64,7 +63,7 @@ npm install
 By following these steps, you can set up and run the project locally or in a hosted environment, ensuring both the server and client are properly configured.
 
 
-## Deployment
+## 📩 Deployment
 
 FastAPI needs the requirements installed to be started:
 
@@ -84,38 +83,39 @@ npm run  # or `npm run dev` for dev mode
 ```
 
 
-## API Reference
+## 📜 API Reference
 
 You can view the API documentation using FastAPI by visiting the **/docs** endpoint of your server (i.e http://localhost:8000/docs). Once your application is running and accessible, simply navigate to your server's URL followed by **/docs**. This interactive interface provides a comprehensive list of available APIs, including details on each supported request, required parameters, allowed HTTP methods, and expected responses. It's an invaluable tool for quickly exploring and understanding the functionality offered by your APIs without the need to manually reference static documentation.
 
-## Dataset
+
+## 📃 Dataset
 
 The dataset was sourced from **[Kaggle](https://www.kaggle.com/)** and can be accessed [here](https://www.kaggle.com/datasets/victorsoeiro/funko-pop-dataset).
 
 This dataset was extracted using Pandas, analyzed, and cleaned by applying ETL (Extract, Transform, Load) principles. After extraction, a JSON file was created for each collection (Users, Orders, and Products). These JSON files will be used by the server to initially populate the database after establishing the connection.## Acknowledgements
 
 
-## Acknowledgements
+## ✔️ Acknowledgements
 
-### FastAPI
+### FastAPI 🚀
 
 FastAPI is a modern web framework for building APIs with Python 3.7+ based on standard Python type hints. It offers high performance with automatic interactive documentation (Swagger UI), WebSocket support, GraphQL integration, CORS middleware, OAuth2 authentication, and more.
 
 [More information Here](https://github.com/tiangolo/fastapi)
 
-### MongoDB
+### MongoDB 📇
 
 MongoDB is a flexible and scalable NoSQL database that stores data in JSON-like documents. It is widely used for modern web applications due to its horizontal scalability, ease of use, and speed.
 
 [More information Here](https://www.mongodb.com/)
 
-### React
+### React ⚛️
 
 React is a JavaScript library for building user interfaces, developed by Facebook. It is known for creating reusable components that efficiently manage application state. React uses a component-based approach to build dynamic and responsive user interfaces. 
 
 [More information Here](https://reactjs.org/)
 
-### Vite
+### Vite ⚡
 
 Vite is a fast build tool for modern web development. It is designed to speed up the development server and hot module replacement (HMR) thanks to its ESModule support, enabling JavaScript module imports without a build step.
 
@@ -131,14 +131,16 @@ In the realm of modern application development, there are numerous useful tools 
 These tools and technologies are widely adopted in the software development community to improve the quality, maintainability, and performance of modern applications.
 
 
-## License
+## 💾 License
 
-This project is licensed under the GNU General Public License v3.0. For more details, see the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
+This project is licensed under the GNU General Public License v3.0.
+
+[GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ![Static Badge](https://img.shields.io/badge/UniSA-WTFunko-red?style=plastic)
 
 
-## Authors
+## 🖐 Authors
 
 **Contributors:**
 - [Marco Palmisciano](https://github.com/JewDaiko)
@@ -148,10 +150,11 @@ This project is licensed under the GNU General Public License v3.0. For more det
 - [Antonio Garofalo](https://github.com/Endless077)
 
 
-## Support
+## 🔔 Support
 
 For support, email [antonio.garofalo125@gmail.com](mailto:antonio.garofalo125@gmail.com) or contact the project contributors.
 
-### Documentation
 
-See the documentation project docs **[here](https://github.com/Endless077/WTFunko/docs)**.
+## 📝 Documentation
+
+See the documentation project docs **[here](https://github.com/Endless077/WTFunko/blob/main/docs.pdf))**.
